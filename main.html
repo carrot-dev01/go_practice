@@ -2,739 +2,659 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 <title>Arco</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400&family=DM+Sans:wght@300;400;500&family=Playfair+Display:ital@1&display=swap" rel="stylesheet">
 <style>
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root{--bg:#f5f4f0;--surface:#eceae4;--border:#ccc9be;--text:#1a1a18;--muted:#8a8880;--accent:#b07d3a;--accdim:#d4b87a;--hand:#1a1a18;--red:#c94040;--green:#3a9e5a;--r:12px;--gap:0.7rem;}
+@media(prefers-color-scheme:dark){:root{--bg:#0e0e10;--surface:#17171a;--border:#2a2a30;--text:#e8e8e0;--muted:#5a5a62;--accent:#c8a96e;--accdim:#5a4820;--hand:#e8e8e0;--red:#e05555;--green:#5ec47a;}}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;font-weight:300;}
+.screen{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;padding:1.2rem 1rem 1rem;gap:var(--gap);transition:opacity .25s,transform .25s;}
+.screen.hidden{opacity:0;pointer-events:none;transform:translateY(10px);}
+.w{width:100%;max-width:340px;}
+.hrow{display:flex;justify-content:space-between;align-items:flex-end;width:100%;max-width:340px;}
+.hrow.three>*{flex:1;}.hrow.three>.mid{text-align:center;}
+.dg{display:flex;flex-direction:column;gap:1px;}.dg.r{text-align:right;}
+.dlbl{font-size:9px;color:var(--muted);letter-spacing:.1em;text-transform:uppercase;}
+.dnum{font-family:'DM Mono',monospace;font-size:20px;color:var(--text);}.dnum.hi{color:var(--accent);}.dnum.sm{font-size:15px;}
+.sbar{display:flex;justify-content:space-between;align-items:center;width:100%;max-width:340px;height:16px;}
+.sdot{width:6px;height:6px;border-radius:50%;background:var(--muted);transition:background .4s;margin-right:7px;flex-shrink:0;}
+.sdot.on{background:var(--accent);}.sdot.mic{background:var(--green);}
+.stxt{font-size:11px;color:var(--muted);}
+.notedisp{font-family:'DM Mono',monospace;font-size:11px;color:var(--accent);opacity:0;transition:opacity .3s;}.notedisp.show{opacity:1;}
+.btn-row{display:flex;gap:8px;width:100%;max-width:340px;}
+.btn{flex:1;padding:11px;background:transparent;border:.5px solid var(--border);border-radius:10px;color:var(--muted);font-family:'DM Sans',sans-serif;font-size:13px;cursor:pointer;letter-spacing:.04em;transition:border-color .18s,color .18s,background .18s,opacity .18s;}
+.btn:hover:not(:disabled){border-color:var(--accent);color:var(--accent);}
+.btn.accent{border-color:var(--accent);color:var(--accent);}.btn.danger{border-color:var(--red);color:var(--red);}.btn.warn{border-color:var(--accent);color:var(--accent);}.btn:disabled{opacity:.3;cursor:default;}
 
-:root {
-  --bg:      #f5f4f0;
-  --surface: #eceae4;
-  --border:  #ccc9be;
-  --text:    #1a1a18;
-  --muted:   #8a8880;
-  --accent:  #b07d3a;
-  --accdim:  #d4b87a;
-  --hand:    #1a1a18;
-  --red:     #c94040;
-  --green:   #3a9e5a;
-}
-@media (prefers-color-scheme: dark) {
-  :root {
-    --bg:      #0e0e10;
-    --surface: #17171a;
-    --border:  #2a2a30;
-    --text:    #e8e8e0;
-    --muted:   #5a5a62;
-    --accent:  #c8a96e;
-    --accdim:  #5a4820;
-    --hand:    #e8e8e0;
-    --red:     #e05555;
-    --green:   #5ec47a;
-  }
-}
+/* ── 홈 ── */
+#title-block{width:100%;max-width:340px;margin-top:6rem;margin-bottom:3.4rem;}
+#title-main{font-family:'Playfair Display',serif;font-style:italic;font-size:32px;color:var(--accent);line-height:1;}
+#title-sub{font-size:9px;color:var(--muted);letter-spacing:.12em;text-transform:uppercase;margin-top:3px;}
+#model-badge{display:flex;align-items:center;justify-content:space-between;width:100%;max-width:340px;}
+#model-badge-left,#model-badge-right{display:flex;align-items:center;gap:6px;}
+#mdot{width:5px;height:5px;border-radius:50%;background:var(--muted);flex-shrink:0;transition:background .4s;}
+#mdot.loading{background:var(--accdim);animation:pulse 1.2s infinite;}#mdot.ready{background:var(--green);}#mdot.error{background:var(--red);}
+#mic-dot{width:5px;height:5px;border-radius:50%;background:var(--muted);flex-shrink:0;transition:background .4s;}#mic-dot.on{background:var(--green);}
+.badge-txt{font-size:10px;color:var(--muted);}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
 
-html, body {
-  height: 100%; overflow: hidden;
-  background: var(--bg); color: var(--text);
-  font-family: 'DM Sans', sans-serif; font-weight: 300;
-}
+/* 모드 버튼 */
+#mode-select{display:flex;gap:6px;width:100%;max-width:340px;}
+.mode-btn{flex:1;padding:10px 6px;background:var(--surface);border:.5px solid var(--border);border-radius:var(--r);cursor:pointer;transition:border-color .18s,background .18s;display:flex;flex-direction:column;align-items:center;gap:3px;}
+.mode-btn:hover{border-color:var(--accent);}
+.mode-btn.active{border-color:var(--accent);background:color-mix(in srgb,var(--accent) 8%,var(--surface));}
+.mode-btn .mt{font-size:12px;font-weight:500;color:var(--text);}
+.mode-btn .ms{font-size:9px;color:var(--muted);text-align:center;line-height:1.4;}
 
-.screen {
-  position: absolute; inset: 0;
-  display: flex; flex-direction: column;
-  align-items: center; justify-content: center;
-  padding: 1.5rem 1rem 2rem; gap: 1.1rem;
-  transition: opacity 0.3s, transform 0.3s;
-}
-.screen.hidden { opacity: 0; pointer-events: none; transform: translateY(10px); }
+/* 드럼 피커 */
+#drum-section{width:100%;max-width:340px;}
+#drum-section-lbl{font-size:9px;color:var(--muted);letter-spacing:.1em;text-transform:uppercase;margin-bottom:6px;}
+#drum-outer{position:relative;height:140px;overflow:hidden;border-radius:var(--r);background:var(--surface);cursor:grab;user-select:none;touch-action:none;}
+#drum-outer:active{cursor:grabbing;}
+#drum-outer::before,#drum-outer::after{content:'';position:absolute;left:0;right:0;height:52px;z-index:2;pointer-events:none;}
+#drum-outer::before{top:0;background:linear-gradient(to bottom,var(--surface) 30%,transparent);}
+#drum-outer::after{bottom:0;background:linear-gradient(to top,var(--surface) 30%,transparent);}
+.sel-line{position:absolute;left:0;right:0;top:50%;transform:translateY(-50%);height:40px;pointer-events:none;z-index:1;border-top:.5px solid var(--accent);border-bottom:.5px solid var(--accent);}
+#drum-inner{position:absolute;left:0;right:0;display:flex;flex-direction:column;align-items:center;will-change:transform;}
+.drum-item{height:40px;width:100%;display:flex;align-items:center;justify-content:center;font-family:'DM Mono',monospace;font-size:17px;color:var(--muted);user-select:none;pointer-events:none;flex-shrink:0;}
+.drum-item.active{color:var(--accent);font-size:21px;font-weight:400;}
+.drum-pad{height:50px;width:100%;flex-shrink:0;}
 
-/* ── 제목 ── */
-#title-block {
-  display: flex; flex-direction: column; align-items: flex-start;
-  width: 100%; max-width: 320px; gap: 2px;
-  margin-top: -6rem; margin-bottom: 3.4rem;
-}
-#title-main {
-  font-family: 'Playfair Display', serif; font-style: italic;
-  font-size: 36px; color: var(--accent);
-  letter-spacing: -0.01em; line-height: 1;
-}
-#title-sub {
-  font-size: 9px; color: var(--muted);
-  letter-spacing: 0.12em; text-transform: uppercase;
-}
+/* Play 모드 아이콘 블록 */
+#play-info{width:100%;max-width:340px;display:none;flex-direction:column;gap:6px;}
+#play-info.visible{display:flex;}
+#play-info-lbl{font-size:9px;color:var(--muted);letter-spacing:.1em;text-transform:uppercase;}
+.play-features{display:flex;align-items:stretch;gap:1px;width:100%;border-radius:var(--r);overflow:hidden;}
+.pf{flex:1;background:var(--surface);padding:1.1rem 0.5rem 0.9rem;display:flex;flex-direction:column;align-items:center;gap:0.5rem;}
+.pf-label{font-size:9px;color:var(--muted);letter-spacing:.08em;text-transform:uppercase;}
 
-/* ── 모델 로딩 배지 ── */
-#model-badge {
-  display: flex; align-items: center; gap: 6px;
-  font-size: 10px; color: var(--muted); letter-spacing: 0.06em;
-  width: 100%; max-width: 320px;
-}
-#model-dot {
-  width: 5px; height: 5px; border-radius: 50%;
-  background: var(--muted); flex-shrink: 0;
-  transition: background 0.4s;
-}
-#model-dot.loading { background: var(--accdim); animation: pulse 1.2s infinite; }
-#model-dot.ready   { background: var(--green); }
-#model-dot.error   { background: var(--red); }
-@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+/* Timer 화면 */
+.timer-center{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.75rem;width:100%;max-width:340px;}
+#pwrap{width:100%;max-width:340px;height:2px;background:var(--border);border-radius:2px;overflow:hidden;}
+#pbar{height:100%;background:var(--accent);width:0%;border-radius:2px;transition:width .95s linear;}
+#stats-t{display:flex;gap:1px;width:100%;max-width:340px;}
+.sb{flex:1;background:var(--surface);padding:.7rem 1rem;display:flex;flex-direction:column;gap:3px;}
+.sb:first-child{border-radius:10px 0 0 10px;}.sb:last-child{border-radius:0 10px 10px 0;}
+.slbl{font-size:9px;color:var(--muted);letter-spacing:.06em;text-transform:uppercase;}
+.sval{font-family:'DM Mono',monospace;font-size:15px;color:var(--text);}
 
-/* ── 상단 디지털 ── */
-.top-row {
-  display: flex; justify-content: space-between; align-items: flex-end;
-  width: 100%; max-width: 320px;
-}
-.dg { display: flex; flex-direction: column; gap: 2px; }
-.dg.r { text-align: right; }
-.dlbl { font-size: 10px; color: var(--muted); letter-spacing: 0.1em; text-transform: uppercase; }
-.dnum { font-family: 'DM Mono', monospace; font-size: 22px; color: var(--text); letter-spacing: 0.02em; }
-.dnum.hi { color: var(--accent); }
+/* Practice 화면 */
+#practice-body{display:flex;flex-direction:column;gap:var(--gap);width:100%;max-width:340px;flex:1;min-height:0;}
+.scard{width:100%;background:var(--surface);border-radius:var(--r);overflow:hidden;transition:flex .32s cubic-bezier(.4,0,.2,1);display:flex;flex-direction:column;}
+.scard-inner{padding:.7rem .9rem;display:flex;flex-direction:column;gap:.55rem;flex:1;}
+.sec-hdr{display:flex;justify-content:space-between;align-items:center;cursor:pointer;padding:.55rem .9rem;border-bottom:.5px solid var(--border);user-select:none;flex-shrink:0;}
+.sec-hdr .sh-title{font-size:10px;color:var(--muted);letter-spacing:.08em;text-transform:uppercase;}
+.sec-hdr .sh-chev{font-size:9px;color:var(--muted);transition:transform .25s;}
+.sec-hdr.open .sh-chev{transform:rotate(180deg);}
+.sec-body{overflow:hidden;transition:max-height .32s cubic-bezier(.4,0,.2,1),opacity .28s;flex:1;display:flex;flex-direction:column;}
+.sec-body.shut{max-height:0!important;opacity:0;}
+#tuner-note-big{font-family:'DM Mono',monospace;font-size:52px;color:var(--text);line-height:1;letter-spacing:-.02em;transition:color .15s;}
+#tuner-note-big.tune{color:var(--green);}#tuner-note-big.sharp,#tuner-note-big.flat{color:var(--red);}
+#tuner-top-row{display:flex;align-items:center;justify-content:space-between;}
+#tuner-right-col{display:flex;flex-direction:column;align-items:flex-end;gap:2px;}
+#tuner-cents{font-family:'DM Mono',monospace;font-size:14px;color:var(--muted);}
+#tuner-hz{font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);}
+#tuner-history{width:100%;border-radius:8px;background:var(--bg);display:block;flex:1;}
+#tol-row{display:flex;align-items:center;gap:8px;flex-shrink:0;}
+#tol-label{font-size:9px;color:var(--muted);letter-spacing:.08em;text-transform:uppercase;white-space:nowrap;}
+input[type=range]{flex:1;appearance:none;-webkit-appearance:none;height:2px;background:var(--border);border-radius:2px;outline:none;cursor:pointer;}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;height:14px;border-radius:50%;background:var(--accent);border:2px solid var(--bg);cursor:pointer;}
+#tol-val{font-family:'DM Mono',monospace;font-size:11px;color:var(--accent);min-width:42px;text-align:right;}
+#timer-sub-inner{display:flex;flex-direction:column;gap:.5rem;align-items:center;}
 
-/* ── 드럼 피커 ── */
-#drum-outer {
-  position: relative; height: 160px; overflow: hidden;
-  border-radius: 12px; background: var(--surface);
-  width: 100%; max-width: 320px;
-  cursor: grab; user-select: none; touch-action: none;
-}
-#drum-outer:active { cursor: grabbing; }
-#drum-outer::before, #drum-outer::after {
-  content: ''; position: absolute; left: 0; right: 0; height: 60px; z-index: 2; pointer-events: none;
-}
-#drum-outer::before { top: 0; background: linear-gradient(to bottom, var(--surface) 30%, transparent); }
-#drum-outer::after  { bottom: 0; background: linear-gradient(to top, var(--surface) 30%, transparent); }
-.sel-line {
-  position: absolute; left: 0; right: 0; top: 50%; transform: translateY(-50%);
-  height: 40px; pointer-events: none; z-index: 1;
-  border-top: 0.5px solid var(--accent); border-bottom: 0.5px solid var(--accent);
-}
-#drum-inner {
-  position: absolute; left: 0; right: 0;
-  display: flex; flex-direction: column; align-items: center;
-  will-change: transform;
-}
-.drum-item {
-  height: 40px; width: 100%;
-  display: flex; align-items: center; justify-content: center;
-  font-family: 'DM Mono', monospace; font-size: 18px; color: var(--muted);
-  user-select: none; pointer-events: none; flex-shrink: 0;
-}
-.drum-item.active { color: var(--accent); font-size: 22px; font-weight: 400; }
-.drum-pad { height: 60px; width: 100%; flex-shrink: 0; }
+/* 메트로놈 */
+.beat-vis-wrap{display:flex;align-items:center;justify-content:center;gap:5px;height:20px;}
+.bd{border-radius:50%;background:var(--border);transition:background .04s,transform .04s;flex-shrink:0;}
+.bd.beat{width:11px;height:11px;}.bd.subdiv{width:6px;height:6px;}
+.bd.lit-a{background:var(--accent);transform:scale(1.35);}.bd.lit-b{background:var(--accent);transform:scale(1.15);}.bd.lit-s{background:var(--accdim);transform:scale(1.1);}
+.metro-bpm-row{display:flex;align-items:center;gap:6px;}
+.bpm-num-el{font-family:'DM Mono',monospace;font-size:36px;color:var(--text);line-height:1;min-width:64px;text-align:center;cursor:ns-resize;user-select:none;touch-action:none;}
+.metro-adj{display:flex;align-items:center;gap:4px;flex:1;}
+.adj-btn{flex:1;height:30px;padding:0;background:transparent;border:.5px solid var(--border);border-radius:7px;color:var(--muted);font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:border-color .15s,color .15s;}
+.adj-btn:hover{border-color:var(--accent);color:var(--accent);}
+.tap-btn{flex:0 0 58px;height:30px;padding:0 3px;background:transparent;border:.5px solid var(--border);border-radius:7px;color:var(--muted);font-family:'DM Sans',sans-serif;font-size:8.5px;cursor:pointer;letter-spacing:.03em;display:flex;align-items:center;justify-content:center;white-space:nowrap;transition:border-color .15s,color .15s;}
+.tap-btn:hover{border-color:var(--accent);color:var(--accent);}
+.metro-bottom{display:grid;grid-template-columns:1fr 1fr 1fr;gap:5px;align-items:stretch;}
+.ts-grid{display:grid;grid-template-columns:1fr 1fr;gap:4px;}
+.sd-grid{display:grid;grid-template-columns:1fr 1fr;gap:4px;}
+.seg{padding:6px 0;background:transparent;border:.5px solid var(--border);border-radius:8px;color:var(--muted);font-family:'DM Mono',monospace;font-size:11px;cursor:pointer;text-align:center;transition:all .12s;}
+.seg:hover{border-color:var(--accent);color:var(--accent);}
+.seg.on{border-color:var(--accent);color:var(--accent);background:color-mix(in srgb,var(--accent) 10%,transparent);}
+.metro-start{grid-column:3;grid-row:1/3;padding:6px 4px;background:transparent;border:.5px solid var(--border);border-radius:8px;color:var(--muted);font-family:'DM Sans',sans-serif;font-size:10px;cursor:pointer;letter-spacing:.04em;transition:all .2s;display:flex;align-items:center;justify-content:center;text-align:center;line-height:1.3;}
+.metro-start.on{background:var(--accent);border-color:var(--accent);color:var(--bg);}
+.metro-start:hover:not(.on){border-color:var(--accent);color:var(--accent);}
 
-/* ── 버튼 ── */
-.btn-row { display: flex; gap: 8px; width: 100%; max-width: 320px; }
-.btn {
-  flex: 1; padding: 13px; background: transparent;
-  border: 0.5px solid var(--border); border-radius: 10px;
-  color: var(--muted); font-family: 'DM Sans', sans-serif;
-  font-size: 13px; cursor: pointer; letter-spacing: 0.04em;
-  transition: border-color 0.2s, color 0.2s, opacity 0.2s;
-}
-.btn:hover:not(:disabled) { border-color: var(--accent); color: var(--accent); }
-.btn.active-mic { border-color: var(--green); color: var(--green); }
-.btn.primary    { border-color: var(--accent); color: var(--accent); }
-.btn.danger     { border-color: var(--red); color: var(--red); }
-.btn.warn       { border-color: var(--accent); color: var(--accent); }
-.btn:disabled   { opacity: 0.3; cursor: default; }
+/* Play 화면 */
+#tm-tuner-note{font-family:'DM Mono',monospace;font-size:52px;color:var(--text);line-height:1;letter-spacing:-.02em;transition:color .15s;}
+#tm-tuner-note.tune{color:var(--green);}#tm-tuner-note.sharp,#tm-tuner-note.flat{color:var(--red);}
+#tuner-history-tm{width:100%;border-radius:8px;background:var(--bg);display:block;}
 
-/* ── 상태 바 ── */
-#sbar {
-  display: flex; justify-content: space-between; align-items: center;
-  width: 100%; max-width: 320px; height: 16px;
-}
-#sdot {
-  width: 6px; height: 6px; border-radius: 50%;
-  background: var(--muted); transition: background 0.4s;
-  margin-right: 7px; flex-shrink: 0;
-}
-#sdot.on  { background: var(--accent); }
-#sdot.mic { background: var(--green); }
-#stxt { font-size: 11px; color: var(--muted); letter-spacing: 0.04em; }
-#note { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--accent); opacity: 0; transition: opacity 0.3s; }
-#note.show { opacity: 1; }
-
-/* ── 진행 바 ── */
-#pwrap { width: 100%; max-width: 320px; height: 3px; background: var(--border); border-radius: 2px; overflow: hidden; }
-#pbar  { height: 100%; background: var(--accent); width: 100%; border-radius: 2px; transition: width 0.8s linear; }
-
-/* ── 통계 ── */
-#stats { display: flex; gap: 1px; width: 100%; max-width: 320px; }
-.sb { flex: 1; background: var(--surface); padding: 0.85rem 1rem; display: flex; flex-direction: column; gap: 3px; }
-.sb:first-child { border-radius: 10px 0 0 10px; }
-.sb:last-child  { border-radius: 0 10px 10px 0; }
-.slbl { font-size: 10px; color: var(--muted); letter-spacing: 0.06em; }
-.sval { font-family: 'DM Mono', monospace; font-size: 17px; color: var(--text); }
-
-/* ── 토스트 ── */
-#toast {
-  position: fixed; bottom: 2rem; left: 50%;
-  transform: translateX(-50%) translateY(14px);
-  background: var(--surface); border: 0.5px solid var(--border);
-  border-radius: 10px; padding: 10px 20px; font-size: 13px;
-  color: var(--text); opacity: 0; pointer-events: none;
-  transition: opacity 0.3s, transform 0.3s; white-space: nowrap;
-}
-#toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+/* 토스트 */
+#toast{position:fixed;bottom:2rem;left:50%;transform:translateX(-50%) translateY(14px);background:var(--surface);border:.5px solid var(--border);border-radius:10px;padding:10px 20px;font-size:13px;color:var(--text);opacity:0;pointer-events:none;transition:opacity .3s,transform .3s;white-space:nowrap;z-index:99;}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
 </style>
 </head>
 <body>
 
-<!-- ══════════ 홈 화면 ══════════ -->
-<div class="screen" id="home-screen">
-
+<!-- 홈 -->
+<div class="screen" id="home">
   <div id="title-block">
-    <span id="title-main">Arco</span>
-    <span id="title-sub">String instrument practice timer</span>
+    <div id="title-main">Arco</div>
+    <div id="title-sub">play more. tune better.</div>
   </div>
 
-  <div class="top-row">
-    <div class="dg">
-      <span class="dlbl">현재 시각</span>
-      <span class="dnum" id="h-now">--:--:--</span>
-    </div>
-    <div class="dg r">
-      <span class="dlbl">목표</span>
-      <span class="dnum hi" id="h-goal">30분</span>
-    </div>
-  </div>
-
-  <div id="drum-outer">
-    <div class="sel-line"></div>
-    <div id="drum-inner"></div>
-  </div>
-
-  <!-- 모델 로딩 상태 -->
   <div id="model-badge">
-    <div id="model-dot" class="loading"></div>
-    <span id="model-txt">Loading AI model...</span>
+    <div id="model-badge-left">
+      <div id="mdot" class="loading"></div>
+      <span id="mtxt" class="badge-txt">Loading AI model...</span>
+    </div>
+    <div id="model-badge-right">
+      <div id="mic-dot"></div>
+      <span id="mic-status-txt" class="badge-txt">Mic off</span>
+    </div>
+  </div>
+
+  <!-- 모드: Measure · Play(기본) · Practice -->
+  <div id="mode-select">
+    <button class="mode-btn" id="mode-timer" onclick="selectMode('timer')">
+      <span class="mt">Measure</span>
+      <span class="ms">Timer</span>
+    </button>
+    <button class="mode-btn active" id="mode-tools" onclick="selectMode('tools')">
+      <span class="mt">Play</span>
+      <span class="ms">Tuner · Metronome</span>
+    </button>
+    <button class="mode-btn" id="mode-practice" onclick="selectMode('practice')">
+      <span class="mt">Practice</span>
+      <span class="ms">Timer · Tuner<br>· Metronome</span>
+    </button>
+  </div>
+
+  <!-- 드럼 피커 (Measure / Practice) -->
+  <div id="drum-section" class="w" style="display:none;">
+    <div id="drum-section-lbl">Goal</div>
+    <div id="drum-outer">
+      <div class="sel-line"></div>
+      <div id="drum-inner"></div>
+    </div>
+  </div>
+
+  <!-- Play 아이콘 블록 -->
+  <div id="play-info" class="visible">
+    <div id="play-info-lbl">Tools</div>
+    <div class="play-features">
+      <!-- Timer -->
+      <div class="pf">
+        <svg width="36" height="36" viewBox="0 0 36 36" fill="none" stroke="var(--muted)" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="18" cy="20" r="12"/>
+          <line x1="18" y1="20" x2="18" y2="13"/>
+          <line x1="18" y1="20" x2="23" y2="23"/>
+          <line x1="13" y1="5" x2="23" y2="5"/>
+          <line x1="18" y1="5" x2="18" y2="8"/>
+        </svg>
+        <span class="pf-label">Timer</span>
+      </div>
+      <!-- Tuner — 반원 게이지 + 바늘 -->
+      <div class="pf">
+        <svg width="36" height="36" viewBox="0 0 36 36" fill="none" stroke="var(--muted)" stroke-width="1.2" stroke-linecap="round">
+          <!-- 반원 게이지 -->
+          <path d="M6 28 A13 13 0 0 1 30 28" stroke-width="1.2"/>
+          <!-- 눈금 왼쪽 -->
+          <line x1="6.5" y1="26" x2="8.5" y2="23.5"/>
+          <!-- 눈금 가운데 (위) -->
+          <line x1="18" y1="15" x2="18" y2="18"/>
+          <!-- 눈금 오른쪽 -->
+          <line x1="29.5" y1="26" x2="27.5" y2="23.5"/>
+          <!-- 바늘 (약간 오른쪽으로 기울어짐) -->
+          <line x1="18" y1="28" x2="24" y2="19" stroke-width="1.4"/>
+          <!-- 중심점 -->
+          <circle cx="18" cy="28" r="1.8" fill="var(--muted)" stroke="none"/>
+        </svg>
+        <span class="pf-label">Tuner</span>
+      </div>
+      <!-- Metronome -->
+      <div class="pf">
+        <svg width="36" height="36" viewBox="0 0 36 36" fill="none" stroke="var(--muted)" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round">
+          <polygon points="12,32 24,32 21,8 15,8"/>
+          <line x1="12" y1="26" x2="24" y2="26"/>
+          <line x1="18" y1="8" x2="18" y2="32"/>
+          <line x1="18" y1="20" x2="23.5" y2="15.5"/>
+          <circle cx="23.5" cy="15.5" r="1.8" fill="var(--muted)" stroke="none"/>
+        </svg>
+        <span class="pf-label">Metronome</span>
+      </div>
+    </div>
   </div>
 
   <div class="btn-row">
-    <button class="btn" id="mic-toggle-btn" onclick="toggleMic()">마이크 켜기</button>
-    <button class="btn" id="start-btn" onclick="startSession()" disabled>시작</button>
+    <button class="btn" id="main-btn" onclick="mainBtnClick()">마이크 켜기</button>
   </div>
-
 </div>
 
-<!-- ══════════ 시계 화면 ══════════ -->
-<div class="screen hidden" id="clock-screen">
-
-  <div class="top-row">
-    <div class="dg">
-      <span class="dlbl">현재 시각</span>
-      <span class="dnum" id="c-now">--:--:--</span>
+<!-- Timer (Measure) 화면 -->
+<div class="screen hidden" id="timer-screen">
+  <div class="timer-center">
+    <div class="hrow three" style="width:100%;">
+      <div class="dg"><span class="dlbl">Now</span><span class="dnum sm" id="t-now">--:--:--</span></div>
+      <div class="dg mid"><span class="dlbl">Goal</span><span class="dnum hi" id="t-goal">30 min</span></div>
+      <div class="dg r"><span class="dlbl">Remaining</span><span class="dnum sm" id="t-left">--:--</span></div>
     </div>
-    <div class="dg r">
-      <span class="dlbl" id="c-goal-lbl">30분 설정 · 목표까지</span>
-      <span class="dnum hi" id="c-left">--:--</span>
+    <div class="sbar" style="width:100%;">
+      <div style="display:flex;align-items:center"><div class="sdot" id="sdot-t"></div><span class="stxt" id="stxt-t">Listening...</span></div>
+      <span class="notedisp" id="note-t"></span>
     </div>
-  </div>
-
-  <div id="sbar">
-    <div style="display:flex;align-items:center">
-      <div id="sdot"></div>
-      <span id="stxt">연주를 시작하세요</span>
+    <canvas id="clk-t"></canvas>
+    <div id="pwrap"><div id="pbar"></div></div>
+    <div id="stats-t">
+      <div class="sb"><span class="slbl">Playing</span><span class="sval" id="vt-total">0s</span></div>
+      <div class="sb"><span class="slbl">Run</span><span class="sval" id="vt-streak">0s</span></div>
     </div>
-    <span id="note"></span>
-  </div>
-
-  <canvas id="clk" width="320" height="320"></canvas>
-
-  <div id="pwrap"><div id="pbar"></div></div>
-
-  <div id="stats">
-    <div class="sb">
-      <span class="slbl">이번 총 연주</span>
-      <span class="sval" id="v-total">0초</span>
-    </div>
-    <div class="sb">
-      <span class="slbl">지금 연속</span>
-      <span class="sval" id="v-sess">0초</span>
+    <div class="btn-row" style="width:100%;">
+      <button class="btn warn" id="pause-t" onclick="togglePause('t')">연습 중지</button>
+      <button class="btn danger" onclick="endSession()">연습 끝</button>
     </div>
   </div>
+</div>
 
+<!-- Practice 화면 -->
+<div class="screen hidden" id="practice-screen">
+  <div class="hrow three">
+    <div class="dg"><span class="dlbl">Now</span><span class="dnum sm" id="p-now">--:--:--</span></div>
+    <div class="dg mid"><span class="dlbl">Elapsed</span><span class="dnum sm hi" id="p-elapsed">00:00</span></div>
+    <div class="dg r"><span class="dlbl">Playing</span><span class="dnum sm" id="p-detected">00:00</span></div>
+  </div>
+  <div class="sbar">
+    <div style="display:flex;align-items:center"><div class="sdot" id="sdot-p"></div><span class="stxt" id="stxt-p">Listening...</span></div>
+    <span class="notedisp" id="note-p"></span>
+  </div>
+  <div id="practice-body">
+    <!-- Timer 카드 -->
+    <div class="scard" id="timer-card" style="flex:0 0 auto;">
+      <div class="sec-hdr" id="timer-hdr" onclick="togglePSec('timer')">
+        <span class="sh-title">Timer</span><span class="sh-chev">▼</span>
+      </div>
+      <div class="sec-body shut" id="timer-body" style="max-height:0;">
+        <div class="scard-inner" id="timer-sub-inner">
+          <canvas id="clk-p" style="display:block;"></canvas>
+          <div style="width:100%;height:2px;background:var(--border);border-radius:2px;overflow:hidden;">
+            <div id="pbar-p" style="height:100%;background:var(--accent);width:0%;border-radius:2px;transition:width .95s linear;"></div>
+          </div>
+          <div style="display:flex;gap:1px;width:100%;">
+            <div class="sb" style="border-radius:10px 0 0 10px;"><span class="slbl">Playing</span><span class="sval" id="vp-total">0s</span></div>
+            <div class="sb" style="border-radius:0 10px 10px 0;"><span class="slbl">Run</span><span class="sval" id="vp-streak">0s</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- Tuner 카드 -->
+    <div class="scard" id="tuner-card" style="flex:2;">
+      <div class="sec-hdr open" id="tuner-hdr" onclick="togglePSec('tuner')">
+        <span class="sh-title">Tuner</span><span class="sh-chev">▼</span>
+      </div>
+      <div class="sec-body" id="tuner-body" style="max-height:9999px;">
+        <div class="scard-inner">
+          <div id="tuner-top-row">
+            <div id="tuner-note-big">--</div>
+            <div id="tuner-right-col"><span id="tuner-cents">-- ¢</span><span id="tuner-hz">-- Hz</span></div>
+          </div>
+          <canvas id="tuner-history"></canvas>
+          <div id="tol-row">
+            <span id="tol-label">In-tune</span>
+            <input type="range" id="tol-slider" min="3" max="25" value="10" step="1" oninput="setTol(+this.value)">
+            <span id="tol-val">±10 ¢</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- Metronome 카드 -->
+    <div class="scard" id="metro-card" style="flex:0 0 auto;">
+      <div class="scard-inner">
+        <div class="beat-vis-wrap" id="beat-vis-p"></div>
+        <div class="metro-bpm-row">
+          <div class="bpm-num-el" id="bpm-num">100</div>
+          <div class="metro-adj">
+            <button class="adj-btn" onclick="adjBPM(-1)">−</button>
+            <button class="adj-btn" onclick="adjBPM(+1)">+</button>
+            <button class="tap-btn" onclick="tapTempo()">Tap Tempo</button>
+          </div>
+        </div>
+        <div class="metro-bottom">
+          <div class="ts-grid" id="ts-grid-p">
+            <button class="seg" data-ts="2" onclick="setTS(2)">2/4</button>
+            <button class="seg" data-ts="3" onclick="setTS(3)">3/4</button>
+            <button class="seg on" data-ts="4" onclick="setTS(4)">4/4</button>
+            <button class="seg" data-ts="6" onclick="setTS(6)">6/8</button>
+          </div>
+          <div class="sd-grid" id="sd-grid-p">
+            <button class="seg on" data-sd="1" onclick="setSD(1)">♩</button>
+            <button class="seg" data-sd="2" onclick="setSD(2)">♩♩</button>
+            <button class="seg" data-sd="3" onclick="setSD(3)">♩♩♩</button>
+            <button class="seg" data-sd="d" onclick="setSD('d')">♩.</button>
+          </div>
+          <button class="metro-start" id="metro-start-p" onclick="toggleMetro()">Start<br>Metronome</button>
+        </div>
+      </div>
+    </div>
+  </div>
   <div class="btn-row">
-    <button class="btn warn" id="pause-btn" onclick="togglePause()">연습 중지</button>
+    <button class="btn warn" id="pause-p" onclick="togglePause('p')">연습 중지</button>
     <button class="btn danger" onclick="endSession()">연습 끝</button>
   </div>
+</div>
 
+<!-- Play 화면 -->
+<div class="screen hidden" id="tools-screen">
+  <div class="hrow">
+    <div class="dg"><span class="dlbl">Now</span><span class="dnum" id="tm-now">--:--:--</span></div>
+  </div>
+  <div class="sbar">
+    <div style="display:flex;align-items:center"><div class="sdot" id="sdot-tm"></div><span class="stxt" id="stxt-tm">Listening...</span></div>
+    <span class="notedisp" id="note-tm"></span>
+  </div>
+  <div class="scard w" style="flex:1;min-height:0;">
+    <div class="scard-inner" style="height:100%;">
+      <div style="display:flex;align-items:center;justify-content:space-between;">
+        <div id="tm-tuner-note">--</div>
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:2px;">
+          <span id="tm-cents" style="font-family:'DM Mono',monospace;font-size:14px;color:var(--muted);">-- ¢</span>
+          <span id="tm-hz" style="font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);">-- Hz</span>
+        </div>
+      </div>
+      <canvas id="tuner-history-tm" style="flex:1;width:100%;border-radius:8px;background:var(--bg);display:block;"></canvas>
+      <div style="display:flex;align-items:center;gap:8px;flex-shrink:0;">
+        <span style="font-size:9px;color:var(--muted);letter-spacing:.08em;text-transform:uppercase;white-space:nowrap;">In-tune</span>
+        <input type="range" id="tol-slider-tm" min="3" max="25" value="10" step="1" oninput="setTolTM(+this.value)">
+        <span id="tol-val-tm" style="font-family:'DM Mono',monospace;font-size:11px;color:var(--accent);min-width:42px;text-align:right;">±10 ¢</span>
+      </div>
+    </div>
+  </div>
+  <div class="scard w" style="flex-shrink:0;">
+    <div class="scard-inner">
+      <div class="beat-vis-wrap" id="beat-vis-tm"></div>
+      <div class="metro-bpm-row">
+        <div class="bpm-num-el" id="bpm-num-tm">100</div>
+        <div class="metro-adj">
+          <button class="adj-btn" onclick="adjBPM(-1)">−</button>
+          <button class="adj-btn" onclick="adjBPM(+1)">+</button>
+          <button class="tap-btn" onclick="tapTempo()">Tap Tempo</button>
+        </div>
+      </div>
+      <div class="metro-bottom">
+        <div class="ts-grid" id="ts-grid-tm">
+          <button class="seg" data-ts2="2" onclick="setTS(2)">2/4</button>
+          <button class="seg" data-ts2="3" onclick="setTS(3)">3/4</button>
+          <button class="seg on" data-ts2="4" onclick="setTS(4)">4/4</button>
+          <button class="seg" data-ts2="6" onclick="setTS(6)">6/8</button>
+        </div>
+        <div class="sd-grid" id="sd-grid-tm">
+          <button class="seg on" data-sd2="1" onclick="setSD(1)">♩</button>
+          <button class="seg" data-sd2="2" onclick="setSD(2)">♩♩</button>
+          <button class="seg" data-sd2="3" onclick="setSD(3)">♩♩♩</button>
+          <button class="seg" data-sd2="d" onclick="setSD('d')">♩.</button>
+        </div>
+        <button class="metro-start" id="metro-start-tm" onclick="toggleMetro()">Start<br>Metronome</button>
+      </div>
+    </div>
+  </div>
+  <div class="btn-row">
+    <button class="btn danger" onclick="endSession()">닫기</button>
+  </div>
 </div>
 
 <div id="toast"></div>
-
-<!-- TensorFlow.js -->
 <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.20.0/dist/tf.min.js"></script>
-
 <script>
-// ── 감지 설정 ──────────────────────────────
-const D = {
-  // FFT 1차 필터 (빠름, 매 프레임 실행)
-  FFT:         4096,
-  SMOOTH:      0.88,
-  HZ_MIN:        80,
-  HZ_MAX:      4800,
-  FLOOR:        -52,
-  PEAK_MARGIN:    4,
-  HARM_DROP:     35,
-  HARM_MIN:       2,
-  HOLD:          180,  // 60=~1초 유지
+'use strict';
+const CONFIG={detect:{fftSize:4096,fftSmooth:.88,hzMin:80,hzMax:4800,noiseFloor:-52,peakMargin:4,harmonicDrop:35,harmonicMin:2,holdFrames:60},yamnet:{intervalMs:975,threshold:.50,sampleRate:16000,inputLen:15600,stringIdx:new Set([132,133,134,135,136,137,138,139,140,141,142,143,144,145,146,147])},tuner:{fftSize:4096,yinThreshold:.10,rmsMin:.008,lockFrames:3,smoothing:.1,histLen:150},metro:{bpmMin:20,bpmMax:160,tapWindowMs:3000,lookaheadS:.12,intervalMs:25,clickDurS:.06,muteTunerMs:80,swipePxPerBpm:2}};
+const NOTES=['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
+const S={mode:'tools',micReady:false,running:false,paused:false,strOK:false,detFreq:0,holdFrames:0,yamnetOK:false,lastYamnetMs:0,goalMin:30,totalSec:0,streakSec:0,elapsedSec:0,goalDone:false,animMs:0,tolCents:10,tolCentsTM:10,smoothFreq:-1,lockedMidi:-1,lockCount:0,histData:new Array(150).fill(null),histDataTM:new Array(150).fill(null),bpm:100,timeSig:4,subDiv:1,metroPlaying:false,tunerOpen:true,timerOpen:false};
+const A={micStream:null,micAC:null,analyserFFT:null,analyserTD:null,fftBuf:null,tdBuf:null,binCount:0,sampleRate:44100,scriptProc:null,pcm16k:new Float32Array(31200),pcmPos:0,isClick:false,wakeLock:null,yamnet:null,yamnetReady:false,yamnetRunning:false,metroTimer:null,metroNext:0,metroTick:0};
 
-  // YAMNet 설정
-  YAMNET_INTERVAL_MS: 975,   // ~1초마다 실행
-  YAMNET_THRESHOLD:   0.5,  // 현악기 스코어 임계값 (0~1)
-  YAMNET_SAMPLE_RATE: 16000, // YAMNet 요구 샘플레이트
-  YAMNET_INPUT_LEN:   15600, // 0.975초 × 16000
-};
+// CSS 캐싱
+let _css=null,_cssDark=null;
+function getCss(){const dark=window.matchMedia('(prefers-color-scheme:dark)').matches;if(_css&&_cssDark===dark)return _css;_cssDark=dark;const st=getComputedStyle(document.documentElement);return _css={accent:st.getPropertyValue('--accent').trim(),accdim:st.getPropertyValue('--accdim').trim(),border:st.getPropertyValue('--border').trim(),muted:st.getPropertyValue('--muted').trim(),text:st.getPropertyValue('--text').trim(),bg:st.getPropertyValue('--bg').trim(),hand:st.getPropertyValue('--hand').trim(),green:st.getPropertyValue('--green').trim()};}
+window.matchMedia('(prefers-color-scheme:dark)').addEventListener('change',()=>{_css=null;});
 
-// ── YAMNet 모델 ────────────────────────────
-let yamnetModel  = null;
-let yamnetReady  = false;
-let yamnetStringIndices = new Set();
+function setBadge(cls,txt){document.getElementById('mdot').className=cls;document.getElementById('mtxt').textContent=txt;}
+function updateHomeBtn(){
+  const btn=document.getElementById('main-btn'),dot=document.getElementById('mic-dot'),txt=document.getElementById('mic-status-txt');
+  if(S.micReady){dot.classList.add('on');txt.textContent='Mic on';btn.textContent='시작';btn.disabled=!A.yamnetReady;btn.classList.toggle('accent',A.yamnetReady);}
+  else{dot.classList.remove('on');txt.textContent='Mic off';btn.textContent='마이크 켜기';btn.disabled=false;btn.classList.remove('accent');}
+}
+async function loadYamnet(){
+  setBadge('loading','Loading AI model...');
+  try{let w=0;while(typeof tf==='undefined'&&w<10000){await new Promise(r=>setTimeout(r,200));w+=200;}A.yamnet=await tf.loadGraphModel('https://tfhub.dev/google/tfjs-model/yamnet/tfjs/1',{fromTFHub:true});A.yamnetReady=true;setBadge('ready','AI model ready');}
+  catch(e){setBadge('error','AI model failed — basic detection active');A.yamnetReady=true;}
+  updateHomeBtn();
+}
+loadYamnet();
 
-// 시작 버튼 상태: 마이크 + AI 모델 둘 다 준비돼야 활성화
-function updateStartBtn() {
-  const startBtn = document.getElementById('start-btn');
-  const ready = micReady && yamnetReady;
-  startBtn.disabled = !ready;
-  if (ready) startBtn.classList.add('primary');
-  else startBtn.classList.remove('primary');
+// 드럼 피커
+const IH=40,DMIN=1,DMAX=60;
+const dOuter=document.getElementById('drum-outer'),dInner=document.getElementById('drum-inner');
+let drumY=0,drumDrag=false,drumSY=0,drumSDY=0;
+(function(){const p1=document.createElement('div');p1.className='drum-pad';dInner.appendChild(p1);for(let i=DMIN;i<=DMAX;i++){const el=document.createElement('div');el.className='drum-item';el.textContent=i+' min';dInner.appendChild(el);}const p2=document.createElement('div');p2.className='drum-pad';dInner.appendChild(p2);})();
+function mToY(m){return-(m-DMIN)*IH;}function yToM(y){return Math.round(-y/IH)+DMIN;}
+function setDrumY(y,anim=false){drumY=y;dInner.style.transition=anim?'transform .22s cubic-bezier(.25,.46,.45,.94)':'none';dInner.style.transform=`translateY(${y}px)`;const m=Math.max(DMIN,Math.min(DMAX,yToM(y)));document.querySelectorAll('.drum-item').forEach((el,i)=>el.classList.toggle('active',i+DMIN===m));}
+function snapDrum(){S.goalMin=Math.max(DMIN,Math.min(DMAX,yToM(drumY)));setDrumY(mToY(S.goalMin),true);document.getElementById('t-goal').textContent=S.goalMin+' min';}
+dOuter.addEventListener('mousedown',e=>{drumDrag=true;drumSY=e.clientY;drumSDY=drumY;dInner.style.transition='none';e.preventDefault();});
+window.addEventListener('mousemove',e=>{if(!drumDrag)return;setDrumY(Math.max(mToY(DMAX),Math.min(mToY(DMIN),drumSDY+(e.clientY-drumSY))));});
+window.addEventListener('mouseup',()=>{if(drumDrag){drumDrag=false;snapDrum();}});
+dOuter.addEventListener('touchstart',e=>{drumDrag=true;drumSY=e.touches[0].clientY;drumSDY=drumY;dInner.style.transition='none';},{passive:true});
+dOuter.addEventListener('touchmove',e=>{if(!drumDrag)return;setDrumY(Math.max(mToY(DMAX),Math.min(mToY(DMIN),drumSDY+(e.touches[0].clientY-drumSY))));},{passive:true});
+dOuter.addEventListener('touchend',()=>{if(drumDrag){drumDrag=false;snapDrum();}});
+setDrumY(mToY(S.goalMin));setTimeout(()=>setDrumY(mToY(S.goalMin)),30);
+
+function selectMode(m){
+  S.mode=m;
+  ['tools','timer','practice'].forEach(id=>document.getElementById('mode-'+id).classList.toggle('active',id===m));
+  const isPlay=m==='tools';
+  document.getElementById('drum-section').style.display=isPlay?'none':'';
+  const pi=document.getElementById('play-info');
+  if(isPlay)pi.classList.add('visible'); else pi.classList.remove('visible');
 }
 
-async function loadYamnet() {
-  setModelStatus('loading', 'Loading AI model...');
-  try {
-    // TF.js가 로드될 때까지 대기
-    let waited = 0;
-    while (typeof tf === 'undefined' && waited < 10000) {
-      await new Promise(r => setTimeout(r, 200));
-      waited += 200;
-    }
-    if (typeof tf === 'undefined') throw new Error('TF.js not loaded');
+async function openMic(){
+  try{
+    A.micStream=await navigator.mediaDevices.getUserMedia({audio:true});
+    A.micAC=new(window.AudioContext||window.webkitAudioContext)();A.sampleRate=A.micAC.sampleRate;
+    A.analyserFFT=A.micAC.createAnalyser();A.analyserFFT.fftSize=CONFIG.detect.fftSize;A.analyserFFT.smoothingTimeConstant=CONFIG.detect.fftSmooth;A.binCount=A.analyserFFT.frequencyBinCount;A.fftBuf=new Float32Array(A.binCount);
+    A.analyserTD=A.micAC.createAnalyser();A.analyserTD.fftSize=CONFIG.tuner.fftSize;A.analyserTD.smoothingTimeConstant=0;A.tdBuf=new Float32Array(CONFIG.tuner.fftSize);
+    A.scriptProc=A.micAC.createScriptProcessor(4096,1,1);
+    const ratio=A.sampleRate/CONFIG.yamnet.sampleRate;
+    A.scriptProc.onaudioprocess=e=>{const inp=e.inputBuffer.getChannelData(0);for(let i=0;i<inp.length;i+=ratio){A.pcm16k[A.pcmPos%A.pcm16k.length]=inp[Math.floor(i)];A.pcmPos++;}};
+    const src=A.micAC.createMediaStreamSource(A.micStream);src.connect(A.analyserFFT);src.connect(A.analyserTD);src.connect(A.scriptProc);A.scriptProc.connect(A.micAC.destination);
+    S.micReady=true;updateHomeBtn();
+  }catch(e){toast('마이크 오류: '+e.message);}
+}
+function mainBtnClick(){if(!S.micReady)openMic();else goStart();}
 
-    // YAMNet을 TFHub에서 직접 로드
-    yamnetModel = await tf.loadGraphModel(
-      'https://tfhub.dev/google/tfjs-model/yamnet/tfjs/1',
-      { fromTFHub: true }
-    );
+let sessionTimer=null,lastFrameMs=Date.now();
+let ctxT=null,ctxP=null,clockPSize=260;
 
-    // 클래스 이름은 직접 정의 (현악기 관련 인덱스만)
-    // YAMNet 521개 클래스 중 현악기 관련 인덱스
-    // 402=Violin, 403=Fiddle, 404=Guitar acoustic, 411=Cello, 414=Bowed string
-    yamnetStringIndices = new Set([
-      132,  // Violin, fiddle
-      133,  // Plucked string instrument
-      134,  // Guitar
-      135,  // Electric guitar
-      136,  // Bass guitar
-      137,  // Acoustic guitar
-      138,  // Steel guitar
-      139,  // Banjo
-      140,  // Sitar
-      141,  // Mandolin
-      142,  // Zither
-      143,  // Ukulele
-      144,  // Cello
-      145,  // Double bass
-      146,  // Violin section
-      147,  // Bowed string instrument
-    ]);
-    yamnetReady = true;
-    setModelStatus('ready', 'AI model ready');
-    updateStartBtn();
-  } catch(e) {
-    setModelStatus('error', 'AI model failed — using basic detection');
-    console.warn('YAMNet load failed:', e);
-  }
+function goStart(){
+  Object.assign(S,{totalSec:0,streakSec:0,elapsedSec:0,animMs:0,goalDone:false,paused:false,holdFrames:0,strOK:false,yamnetOK:false,lastYamnetMs:0,smoothFreq:-1,lockedMidi:-1,lockCount:0,histData:new Array(CONFIG.tuner.histLen).fill(null),histDataTM:new Array(CONFIG.tuner.histLen).fill(null),tunerOpen:true,timerOpen:false});
+  S.running=true;
+  document.getElementById('home').classList.add('hidden');
+  document.getElementById('timer-screen').classList.toggle('hidden',S.mode!=='timer');
+  document.getElementById('practice-screen').classList.toggle('hidden',S.mode!=='practice');
+  document.getElementById('tools-screen').classList.toggle('hidden',S.mode!=='tools');
+  document.getElementById('t-goal').textContent=S.goalMin+' min';
+  setDot(S.mode,'mic','Listening...');
+  if(S.mode==='practice'){applyPSec(true);setTimeout(()=>resizePCanvases(),50);}
+  if(S.mode==='tools')setTimeout(()=>resizeTMCanvas(),50);
+  if(S.mode!=='tools'){clearInterval(sessionTimer);sessionTimer=setInterval(()=>{if(!S.running||S.paused)return;S.elapsedSec++;if(S.strOK){S.totalSec++;S.streakSec++;}else{S.streakSec=0;}refreshUI();},1000);}
+  navigator.wakeLock?.request('screen').then(wl=>A.wakeLock=wl).catch(()=>{});
+}
+function togglePause(w){
+  S.paused=!S.paused;const btn=document.getElementById(w==='t'?'pause-t':'pause-p');
+  if(S.paused){btn.textContent='연습 재개';btn.classList.replace('warn','accent');S.strOK=false;S.holdFrames=0;S.yamnetOK=false;S.streakSec=0;if(S.metroPlaying)stopMetro();setDot(w==='t'?'timer':'practice','','Paused');}
+  else{btn.textContent='연습 중지';btn.classList.replace('accent','warn');setDot(w==='t'?'timer':'practice','mic','Listening...');}
+}
+function endSession(){S.running=false;S.paused=false;S.strOK=false;S.holdFrames=0;clearInterval(sessionTimer);if(S.metroPlaying)stopMetro();['timer-screen','practice-screen','tools-screen'].forEach(id=>document.getElementById(id).classList.add('hidden'));document.getElementById('home').classList.remove('hidden');A.wakeLock?.release();A.wakeLock=null;}
+function setDot(mode,cls,txt){const map={timer:'t',practice:'p',tools:'tm'};const s=map[mode]||'t';const dot=document.getElementById('sdot-'+s);if(dot)dot.className='sdot'+(cls?' '+cls:'');const el=document.getElementById('stxt-'+s);if(el)el.textContent=txt;}
+
+// 아코디언 — 상호 배타적
+function togglePSec(sec){
+  if(sec==='timer'){if(!S.timerOpen){S.timerOpen=true;S.tunerOpen=false;}else{S.timerOpen=false;S.tunerOpen=true;}}
+  else{if(!S.tunerOpen){S.tunerOpen=true;S.timerOpen=false;}else S.tunerOpen=false;}
+  applyPSec();
+}
+function applyPSec(instant=false){
+  const tc=document.getElementById('tuner-card'),timc=document.getElementById('timer-card');
+  const tb=document.getElementById('tuner-body'),timb=document.getElementById('timer-body');
+  const th=document.getElementById('tuner-hdr'),timh=document.getElementById('timer-hdr');
+  if(instant){tb.style.transition='none';timb.style.transition='none';}
+  tc.style.flex=S.tunerOpen?'2':'0 0 auto';timc.style.flex=S.timerOpen?'2':'0 0 auto';
+  tb.style.maxHeight=S.tunerOpen?'9999px':'0';timb.style.maxHeight=S.timerOpen?'9999px':'0';
+  tb.classList.toggle('shut',!S.tunerOpen);timb.classList.toggle('shut',!S.timerOpen);
+  th.classList.toggle('open',S.tunerOpen);timh.classList.toggle('open',S.timerOpen);
+  if(!instant)setTimeout(()=>resizePCanvases(),360);
 }
 
-function setModelStatus(state, msg) {
-  document.getElementById('model-dot').className = state;
-  document.getElementById('model-txt').textContent = msg;
+function fmtSec(s){const m=Math.floor(s/60),r=s%60;if(m===0)return r+'s';if(r===0)return m+'m';return m+'m '+r+'s';}
+function fmtMMSS(s){return String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0');}
+function refreshUI(){
+  const gs=S.goalMin*60,rem=Math.max(0,gs-S.totalSec),pct=(S.totalSec/gs*100).toFixed(1)+'%';
+  document.getElementById('t-left').textContent=fmtMMSS(rem);document.getElementById('vt-total').textContent=fmtSec(S.totalSec);document.getElementById('vt-streak').textContent=fmtSec(S.streakSec);document.getElementById('pbar').style.width=pct;
+  document.getElementById('p-elapsed').textContent=fmtMMSS(S.elapsedSec);document.getElementById('p-detected').textContent=fmtMMSS(S.totalSec);document.getElementById('vp-total').textContent=fmtSec(S.totalSec);document.getElementById('vp-streak').textContent=fmtSec(S.streakSec);document.getElementById('pbar-p').style.width=pct;
+  if(S.running&&!S.goalDone&&S.totalSec>=gs){S.goalDone=true;toast('목표 달성! 수고하셨어요 🎻');}
 }
+function toast(msg){const el=document.getElementById('toast');el.textContent=msg;el.classList.add('show');setTimeout(()=>el.classList.remove('show'),3000);}
 
-loadYamnet(); // 페이지 로드 즉시 시작
-
-// ── 드럼 피커 ──────────────────────────────
-const ITEM_H = 40, MIN_G = 1, MAX_G = 60;
-let goalMin = 30;
-const drumOuter = document.getElementById('drum-outer');
-const drumInner = document.getElementById('drum-inner');
-
-const padTop = document.createElement('div'); padTop.className='drum-pad'; drumInner.appendChild(padTop);
-for (let i = MIN_G; i <= MAX_G; i++) {
-  const el = document.createElement('div');
-  el.className = 'drum-item';
-  el.textContent = i + '분';
-  drumInner.appendChild(el);
-}
-const padBot = document.createElement('div'); padBot.className='drum-pad'; drumInner.appendChild(padBot);
-
-let drumY = 0, isDragging = false, dragStartY = 0, dragStartDrumY = 0;
-function minToY(m) { return -(m - MIN_G) * ITEM_H; }
-function yToMin(y) { return Math.round(-y / ITEM_H) + MIN_G; }
-
-function setDrumY(y, animate=false) {
-  drumY = y;
-  drumInner.style.transition = animate ? 'transform 0.22s cubic-bezier(0.25,0.46,0.45,0.94)' : 'none';
-  drumInner.style.transform  = `translateY(${y}px)`;
-  const m = Math.max(MIN_G, Math.min(MAX_G, yToMin(y)));
-  document.querySelectorAll('.drum-item').forEach((el, i) => el.classList.toggle('active', i + MIN_G === m));
-}
-function snapToNearest() {
-  goalMin = Math.max(MIN_G, Math.min(MAX_G, yToMin(drumY)));
-  setDrumY(minToY(goalMin), true);
-  document.getElementById('h-goal').textContent = goalMin + '분';
-  document.getElementById('c-goal-lbl').textContent = goalMin + '분 설정 · 목표까지';
-}
-
-drumOuter.addEventListener('mousedown', e => {
-  isDragging=true; dragStartY=e.clientY; dragStartDrumY=drumY;
-  drumInner.style.transition='none'; e.preventDefault();
-});
-window.addEventListener('mousemove', e => {
-  if (!isDragging) return;
-  const raw = dragStartDrumY + (e.clientY - dragStartY);
-  setDrumY(Math.max(minToY(MAX_G), Math.min(minToY(MIN_G), raw)));
-});
-window.addEventListener('mouseup', () => { if (isDragging) { isDragging=false; snapToNearest(); } });
-drumOuter.addEventListener('touchstart', e => {
-  isDragging=true; dragStartY=e.touches[0].clientY; dragStartDrumY=drumY;
-  drumInner.style.transition='none';
-}, {passive:true});
-drumOuter.addEventListener('touchmove', e => {
-  if (!isDragging) return;
-  const raw = dragStartDrumY + (e.touches[0].clientY - dragStartY);
-  setDrumY(Math.max(minToY(MAX_G), Math.min(minToY(MIN_G), raw)));
-}, {passive:true});
-drumOuter.addEventListener('touchend', () => { if (isDragging) { isDragging=false; snapToNearest(); } });
-
-setDrumY(minToY(goalMin));
-setTimeout(() => setDrumY(minToY(goalMin)), 30);
-
-// ── 오디오 상태 ────────────────────────────
-let micReady=false, micStream=null;
-let analyser=null, fData=null, bufLen=0, sRate=44100;
-let scriptProcessor=null;
-// 16kHz 리샘플 버퍼 (YAMNet용)
-let pcmBuffer16k = new Float32Array(D.YAMNET_INPUT_LEN * 2);
-let pcmWritePos  = 0;
-
-async function toggleMic() {
-  const btn      = document.getElementById('mic-toggle-btn');
-  const startBtn = document.getElementById('start-btn');
-  if (!micReady) {
-    try {
-      micStream = await navigator.mediaDevices.getUserMedia({audio:true});
-      const ac  = new(window.AudioContext||window.webkitAudioContext)();
-      sRate     = ac.sampleRate;
-
-      // FFT 분석기
-      analyser  = ac.createAnalyser();
-      analyser.fftSize = D.FFT;
-      analyser.smoothingTimeConstant = D.SMOOTH;
-      bufLen    = analyser.frequencyBinCount;
-      fData     = new Float32Array(bufLen);
-
-      // PCM 수집기 (YAMNet용 16kHz 리샘플)
-      scriptProcessor = ac.createScriptProcessor(4096, 1, 1);
-      const downsampleRatio = sRate / D.YAMNET_SAMPLE_RATE;
-      scriptProcessor.onaudioprocess = (e) => {
-        const input = e.inputBuffer.getChannelData(0);
-        for (let i = 0; i < input.length; i += downsampleRatio) {
-          pcmBuffer16k[pcmWritePos % pcmBuffer16k.length] = input[Math.floor(i)];
-          pcmWritePos++;
-        }
-      };
-
-      const src = ac.createMediaStreamSource(micStream);
-      src.connect(analyser);
-      src.connect(scriptProcessor);
-      scriptProcessor.connect(ac.destination);
-
-      micReady = true;
-      btn.textContent = '마이크 끄기'; btn.classList.add('active-mic');
-      // 마이크 + AI 모델 둘 다 준비됐을 때만 시작 가능
-      updateStartBtn();
-    } catch(e) { showToast('마이크 오류: ' + e.message); }
-  } else {
-    if (micStream) micStream.getTracks().forEach(t => t.stop());
-    if (scriptProcessor) scriptProcessor.disconnect();
-    micStream=null; analyser=null; scriptProcessor=null; micReady=false;
-    pcmWritePos=0;
-    btn.textContent='마이크 켜기'; btn.classList.remove('active-mic');
-    updateStartBtn();
-  }
-}
-
-// ── 세션 ───────────────────────────────────
-let running=false, paused=false;
-let wakeLock = null;
-let strOK=false, detFreq=0, hold=0;
-let totalSec=0, sessSec=0, goalDone=false;
-let statsTimer=null, lastMs=Date.now(), animMs=0;
-// YAMNet 결과 캐시
-let yamnetOK = false;
-let lastYamnetMs = 0;
-const NOTES = ['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
-
-function startSession() {
-  totalSec=0; sessSec=0; animMs=0; goalDone=false;
-  paused=false; hold=0; strOK=false; yamnetOK=false; lastYamnetMs=0;
-  running=true;
-  document.getElementById('home-screen').classList.add('hidden');
-  document.getElementById('clock-screen').classList.remove('hidden');
-  document.getElementById('sdot').className='mic';
-  document.getElementById('stxt').textContent='연주를 시작하세요';
-  document.getElementById('pause-btn').textContent='연습 중지';
-  document.getElementById('pause-btn').classList.remove('primary');
-  document.getElementById('pause-btn').classList.add('warn');
-  refresh();
-  clearInterval(statsTimer);
-  requestWakeLock();
-  statsTimer=setInterval(()=>{ if(running&&!paused&&strOK){ sessSec++;totalSec++;refresh(); } },1000);
-}
-
-async function requestWakeLock() {
-  try {
-    wakeLock = await navigator.wakeLock.request('screen');
-  } catch(e) {
-  }
-}
-
-function togglePause() {
-  paused=!paused;
-  const btn=document.getElementById('pause-btn');
-  if(paused){
-    btn.textContent='연습 재개'; btn.classList.remove('warn'); btn.classList.add('primary');
-    document.getElementById('sdot').className='';
-    document.getElementById('stxt').textContent='일시 중지됨';
-    strOK=false; hold=0; yamnetOK=false;
-  } else {
-    btn.textContent='연습 중지'; btn.classList.remove('primary'); btn.classList.add('warn');
-    document.getElementById('sdot').className='mic';
-    document.getElementById('stxt').textContent='연주를 시작하세요';
-  }
-}
-
-function endSession() {
-  running=false; paused=false; strOK=false; hold=0; yamnetOK=false;
-  totalSec=0; sessSec=0; animMs=0;
-  clearInterval(statsTimer);
-  document.getElementById('sdot').className='';
-  document.getElementById('note').classList.remove('show');
-  document.getElementById('clock-screen').classList.add('hidden');
-  document.getElementById('home-screen').classList.remove('hidden');
-}
-
-// ── 화면 갱신 ──────────────────────────────
-function fmt(s) {
-  const m=Math.floor(s/60),r=Math.floor(s%60);
-  if(m===0)return r+'초'; if(r===0)return m+'분'; return m+'분 '+r+'초';
-}
-function mmss(s) {
-  return String(Math.floor(s/60)).padStart(2,'0')+':'+String(Math.floor(s%60)).padStart(2,'0');
-}
-function refresh() {
-  document.getElementById('v-total').textContent=fmt(totalSec);
-  document.getElementById('v-sess').textContent=fmt(sessSec);
-  const rem=Math.max(0,goalMin*60-animMs/1000);
-  document.getElementById('c-left').textContent=mmss(rem);
-  const pct=Math.max(0,100-(animMs/1000)/(goalMin*60)*100);
-  document.getElementById('pbar').style.width=pct+'%';
-  if(running&&!goalDone&&animMs/1000>=goalMin*60){
-    goalDone=true; showToast('목표 달성! 수고하셨어요 🎻');
-  }
-}
-function showToast(msg) {
-  const t=document.getElementById('toast');
-  t.textContent=msg; t.classList.add('show');
-  setTimeout(()=>t.classList.remove('show'),3000);
-}
-
-// ── FFT 1차 필터 (빠름) ────────────────────
-function fftGate() {
-  if(!analyser) return false;
-  analyser.getFloatFrequencyData(fData);
-  const lo=Math.floor(D.HZ_MIN*bufLen*2/sRate);
-  const hi=Math.min(Math.floor(D.HZ_MAX*bufLen*2/sRate),bufLen-1);
+function fftDetect(){
+  if(!A.analyserFFT)return false;
+  A.analyserFFT.getFloatFrequencyData(A.fftBuf);
+  const lo=Math.floor(CONFIG.detect.hzMin*A.binCount*2/A.sampleRate),hi=Math.min(Math.floor(CONFIG.detect.hzMax*A.binCount*2/A.sampleRate),A.binCount-1);
   let peak=-Infinity,pkB=0,sum=0,n=0;
-  for(let i=lo;i<=hi;i++){
-    if(fData[i]>peak){peak=fData[i];pkB=i;}
-    if(fData[i]>-90){sum+=fData[i];n++;}
-  }
-  if(peak<D.FLOOR||n===0)return false;
-  if(peak-sum/n<D.PEAK_MARGIN)return false;
-  let h=0;
-  for(const m of[2,3,4,5]){
-    const b=Math.round(pkB*m);
-    if(b<bufLen&&fData[b]>peak-D.HARM_DROP)h++;
-  }
-  if(h<D.HARM_MIN)return false;
-  detFreq=Math.round(pkB*sRate/(bufLen*2));
-  return true;
+  for(let i=lo;i<=hi;i++){if(A.fftBuf[i]>peak){peak=A.fftBuf[i];pkB=i;}if(A.fftBuf[i]>-90){sum+=A.fftBuf[i];n++;}}
+  if(peak<CONFIG.detect.noiseFloor||n===0||peak-sum/n<CONFIG.detect.peakMargin)return false;
+  let h=0;for(const m of[2,3,4,5]){const b=Math.round(pkB*m);if(b<A.binCount&&A.fftBuf[b]>peak-CONFIG.detect.harmonicDrop)h++;}
+  if(h<CONFIG.detect.harmonicMin)return false;
+  S.detFreq=Math.round(pkB*A.sampleRate/(A.binCount*2));return true;
+}
+async function runYamnet(){
+  const Y=CONFIG.yamnet;if(!A.yamnet||A.yamnetRunning||A.pcmPos<Y.inputLen)return;A.yamnetRunning=true;
+  try{const s=new Float32Array(Y.inputLen),st=A.pcmPos-Y.inputLen;for(let i=0;i<Y.inputLen;i++)s[i]=A.pcm16k[(st+i)%A.pcm16k.length];const wf=tf.tensor1d(s),res=A.yamnet.predict(wf),sc=res instanceof Array?res[0]:res,arr=await sc.array(),flat=Array.isArray(arr[0])?arr[0]:arr;let mx=0;for(const idx of Y.stringIdx){if(flat[idx]>mx)mx=flat[idx];}S.yamnetOK=mx>=Y.threshold;wf.dispose();if(sc!==res)sc.dispose();}
+  catch(e){S.yamnetOK=true;}A.yamnetRunning=false;
+}
+function freqToName(f){if(!f)return'';const midi=Math.round(12*Math.log2(f/440))+69;return NOTES[((midi%12)+12)%12]+(Math.floor(midi/12)-1)+' · '+f+'Hz';}
+
+// YIN — 2프레임마다
+let _yf=0,_ly=-1;
+function yin(buf,sr){
+  if(++_yf%2!==0)return _ly;
+  const N=buf.length,half=Math.floor(N/2);let rms=0;for(let i=0;i<N;i++)rms+=buf[i]*buf[i];if(Math.sqrt(rms/N)<CONFIG.tuner.rmsMin)return _ly=-1;
+  const d=new Float32Array(half);for(let tau=1;tau<half;tau++){let s=0;for(let j=0;j<half;j++){const dif=buf[j]-buf[j+tau];s+=dif*dif;}d[tau]=s;}
+  const c=new Float32Array(half);c[0]=1;let run=0;for(let tau=1;tau<half;tau++){run+=d[tau];c[tau]=run===0?0:d[tau]/(run/tau);}
+  let t=-1;for(let tau=2;tau<half-1;tau++){if(c[tau]<CONFIG.tuner.yinThreshold){while(tau+1<half&&c[tau+1]<c[tau])tau++;t=tau;break;}}
+  if(t===-1){let mn=Infinity;for(let tau=2;tau<half;tau++){if(c[tau]<mn){mn=c[tau];t=tau;}}if(t===-1||mn>.5)return _ly=-1;}
+  const b=(t>0&&t<half-1)?t+(c[t+1]-c[t-1])/(2*(2*c[t]-c[t-1]-c[t+1])):t;
+  return _ly=b<=0?-1:sr/b;
 }
 
-// ── YAMNet 2차 분류 (비동기, ~1초마다) ────────
-let yamnetRunning = false;
-async function runYamnet() {
-  if(!yamnetReady||yamnetRunning||pcmWritePos<D.YAMNET_INPUT_LEN) return;
-  yamnetRunning=true;
-  try {
-    const samples = new Float32Array(D.YAMNET_INPUT_LEN);
-    const startPos = pcmWritePos - D.YAMNET_INPUT_LEN;
-    for(let i=0;i<D.YAMNET_INPUT_LEN;i++){
-      samples[i] = pcmBuffer16k[(startPos+i) % pcmBuffer16k.length];
-    }
+function updateTunerUI(raw,noteId,centsId,hzId,hist,canvasId,tol){
+  const nEl=document.getElementById(noteId),cEl=document.getElementById(centsId),hEl=document.getElementById(hzId);
+  if(raw===-1){S.smoothFreq=-1;S.lockedMidi=-1;S.lockCount=0;nEl.textContent='--';nEl.className=nEl.className.replace(/\b(tune|sharp|flat)\b/g,'').trim();cEl.textContent='-- ¢';hEl.textContent='-- Hz';drawHistory(hist,canvasId,tol);return;}
+  const rm=Math.round(12*Math.log2(raw/440))+69;
+  if(rm===S.lockedMidi)S.smoothFreq=S.smoothFreq===-1?raw:S.smoothFreq+(raw-S.smoothFreq)*CONFIG.tuner.smoothing;
+  else{S.lockCount++;if(S.lockCount>=CONFIG.tuner.lockFrames){S.lockedMidi=rm;S.lockCount=0;S.smoothFreq=raw;}else if(S.smoothFreq===-1)S.smoothFreq=raw;}
+  const freq=S.smoothFreq,midi=Math.round(12*Math.log2(freq/440))+69,tgt=440*Math.pow(2,(midi-69)/12),cents=Math.round(1200*Math.log2(freq/tgt)),name=NOTES[((midi%12)+12)%12]+(Math.floor(midi/12)-1);
+  hist.push(cents);hist.shift();
+  const cls=Math.abs(cents)<=tol?'tune':cents>0?'sharp':'flat';
+  nEl.textContent=name;nEl.className=nEl.className.replace(/\b(tune|sharp|flat)\b/g,'').trim()+' '+cls;
+  cEl.textContent=(cents>0?'+':'')+cents+' ¢';hEl.textContent=Math.round(freq)+' Hz';
+  drawHistory(hist,canvasId,tol);
+}
+function setTol(v){S.tolCents=v;document.getElementById('tol-val').textContent='±'+v+' ¢';}
+function setTolTM(v){S.tolCentsTM=v;document.getElementById('tol-val-tm').textContent='±'+v+' ¢';}
 
-    const waveform = tf.tensor1d(samples);
-    const result   = yamnetModel.predict(waveform);
-    // result shape: [frames, 521] — 각 프레임의 클래스 스코어
-    const scores   = result instanceof Array ? result[0] : result;
-    const scoresArr = await scores.array();
+function drawHistory(hist,canvasId,tol){
+  const canvas=document.getElementById(canvasId);if(!canvas||!canvas.width)return;
+  const W=canvas.offsetWidth||canvas.width,H=canvas.offsetHeight||canvas.height;if(!W||!H)return;
+  const C=getCss(),c=canvas.getContext('2d');
+  c.clearRect(0,0,W,H);c.fillStyle=C.bg;c.fillRect(0,0,W,H);
+  const ppc=(W/2)/50;c.fillStyle=C.green+'28';c.fillRect(W/2-tol*ppc,0,tol*2*ppc,H);
+  c.strokeStyle=C.border;c.lineWidth=.5;c.setLineDash([2,4]);c.beginPath();c.moveTo(W/2,0);c.lineTo(W/2,H);c.stroke();c.setLineDash([]);
+  const N=CONFIG.tuner.histLen,rH=H/N;c.lineWidth=2;c.lineCap='round';c.lineJoin='round';let st=false;
+  for(let i=0;i<N;i++){const v=hist[i],y=(i+.5)*rH;if(v===null){if(st){c.stroke();st=false;}continue;}const x=W/2+Math.max(-50,Math.min(50,v))*ppc,inT=Math.abs(v)<=tol;c.globalAlpha=.2+((N-1-i)/N)*.8;if(!st){c.beginPath();c.moveTo(x,y);c.strokeStyle=inT?C.green:C.muted;st=true;}else c.lineTo(x,y);}
+  if(st)c.stroke();c.globalAlpha=1;
+}
+function setupCanvas(el,size){if(!el)return null;const dpr=window.devicePixelRatio||1;el.width=size*dpr;el.height=size*dpr;el.style.width=size+'px';el.style.height=size+'px';const ctx=el.getContext('2d');ctx.scale(dpr,dpr);return ctx;}
 
-    // 프레임별 현악기 스코어 최대값
-    let maxScore = 0;
-    const frames = Array.isArray(scoresArr[0]) ? scoresArr : [scoresArr];
-    for (const frame of frames) {
-      for (const idx of yamnetStringIndices) {
-        if (frame[idx] > maxScore) maxScore = frame[idx];
-      }
-    }
+function resizePCanvases(){
+  const th=document.getElementById('tuner-history');
+  if(th&&th.offsetParent!==null&&th.offsetWidth>0){const dpr=window.devicePixelRatio||1,w=th.offsetWidth,h=Math.max(60,th.offsetHeight||80);th.width=w*dpr;th.height=h*dpr;th.style.width=w+'px';th.style.height=h+'px';th.getContext('2d').scale(dpr,dpr);}
+  // Practice 타이머 시계 — 최대 260px
+  const cp=document.getElementById('clk-p'),inner=document.getElementById('timer-sub-inner');
+  if(cp&&inner&&inner.offsetWidth>0){const size=Math.min(inner.offsetWidth,260);clockPSize=size;ctxP=setupCanvas(cp,size);}
+}
+function resizeTMCanvas(){const th=document.getElementById('tuner-history-tm');if(!th||!th.offsetWidth)return;const dpr=window.devicePixelRatio||1,w=th.offsetWidth,h=th.offsetHeight||200;th.width=w*dpr;th.height=h*dpr;th.style.width=w+'px';th.style.height=h+'px';th.getContext('2d').scale(dpr,dpr);}
 
-    yamnetOK = maxScore >= D.YAMNET_THRESHOLD;
-    waveform.dispose();
-    if (scores !== result) scores.dispose();
-  } catch(e) {
-    yamnetOK = true; // 실패시 FFT만으로 fallback
-  }
-  yamnetRunning=false;
+let tapTimes=[];
+function getTickInterval(){const b=60/S.bpm;return S.subDiv==='d'?b/2:b/S.subDiv;}
+function getTotalTicks(){return S.subDiv==='d'?S.timeSig*2:S.timeSig*S.subDiv;}
+function scheduleClick(time,tick){
+  if(!A.micAC)return;const osc=A.micAC.createOscillator(),gain=A.micAC.createGain();osc.connect(gain);gain.connect(A.micAC.destination);
+  let freq,vol;if(S.subDiv==='d'){const b1=tick===0,bs=tick%2===0;freq=b1?1500:bs?1000:700;vol=b1?.6:bs?.38:.16;}else{const b1=tick===0,ib=tick%S.subDiv===0;freq=b1?1500:ib?1000:700;vol=b1?.6:ib?.38:.16;}
+  gain.gain.setValueAtTime(vol,time);gain.gain.exponentialRampToValueAtTime(.001,time+.04);osc.frequency.value=freq;osc.start(time);osc.stop(time+CONFIG.metro.clickDurS);
+  const dl=Math.max(0,(time-A.micAC.currentTime)*1000);setTimeout(()=>litBeat(tick),dl);setTimeout(()=>{A.isClick=true;},dl-5);setTimeout(()=>{A.isClick=false;},dl+CONFIG.metro.muteTunerMs);
+}
+function metroSched(){while(A.metroNext<A.micAC.currentTime+CONFIG.metro.lookaheadS){scheduleClick(A.metroNext,A.metroTick);A.metroTick=(A.metroTick+1)%getTotalTicks();A.metroNext+=getTickInterval();}A.metroTimer=setTimeout(metroSched,CONFIG.metro.intervalMs);}
+function startMetro(){if(!A.micAC)return;S.metroPlaying=true;A.metroTick=0;A.metroNext=A.micAC.currentTime+.05;metroSched();updateMetroBtn(true);buildBeatVis();}
+function stopMetro(){S.metroPlaying=false;clearTimeout(A.metroTimer);updateMetroBtn(false);document.querySelectorAll('.bd').forEach(d=>d.classList.remove('lit-a','lit-b','lit-s'));}
+function toggleMetro(){if(!A.micAC){toast('마이크를 먼저 켜주세요');return;}S.metroPlaying?stopMetro():startMetro();}
+function updateMetroBtn(on){['metro-start-p','metro-start-tm'].forEach(id=>{const el=document.getElementById(id);if(!el)return;el.innerHTML=on?'Stop<br>Metronome':'Start<br>Metronome';el.classList.toggle('on',on);});}
+function setBPM(v){S.bpm=Math.max(CONFIG.metro.bpmMin,Math.min(CONFIG.metro.bpmMax,v));document.querySelectorAll('#bpm-num,#bpm-num-tm').forEach(el=>{if(el)el.textContent=S.bpm;});if(S.metroPlaying){stopMetro();startMetro();}}
+function adjBPM(d){setBPM(S.bpm+d);}
+function setTS(v){S.timeSig=v;document.querySelectorAll('[data-ts],[data-ts2]').forEach(b=>{const val=b.dataset.ts??b.dataset.ts2;if(val)b.classList.toggle('on',+val===v);});buildBeatVis();if(S.metroPlaying){stopMetro();startMetro();}}
+function setSD(v){S.subDiv=v;document.querySelectorAll('[data-sd],[data-sd2]').forEach(b=>{const val=b.dataset.sd??b.dataset.sd2;if(val)b.classList.toggle('on',val===String(v));});buildBeatVis();if(S.metroPlaying){stopMetro();startMetro();}}
+function buildBeatVis(){['beat-vis-p','beat-vis-tm'].forEach(id=>{const wrap=document.getElementById(id);if(!wrap)return;wrap.innerHTML='';const total=getTotalTicks();for(let i=0;i<total;i++){const dot=document.createElement('div');dot.className='bd '+(S.subDiv==='d'?i%2===0:i%S.subDiv===0?'beat':'subdiv');dot.dataset.tick=i;wrap.appendChild(dot);}});}
+buildBeatVis();
+function litBeat(tick){document.querySelectorAll('.bd').forEach(d=>{d.classList.remove('lit-a','lit-b','lit-s');if(+d.dataset.tick!==tick)return;if(tick===0)d.classList.add('lit-a');else d.classList.add((S.subDiv==='d'?tick%2===0:tick%S.subDiv===0)?'lit-b':'lit-s');});}
+function tapTempo(){const now=Date.now();tapTimes=tapTimes.filter(t=>now-t<CONFIG.metro.tapWindowMs);tapTimes.push(now);if(tapTimes.length>=2){const avg=tapTimes.slice(1).reduce((s,t,i)=>s+(t-tapTimes[i]),0)/(tapTimes.length-1);setBPM(Math.round(60000/avg));}}
+function setupBpmSwipe(id){const el=document.getElementById(id);if(!el)return;let sy=0,sb=0,sw=false;el.addEventListener('mousedown',e=>{sw=true;sy=e.clientY;sb=S.bpm;e.preventDefault();});window.addEventListener('mousemove',e=>{if(!sw)return;setBPM(sb+Math.round((sy-e.clientY)/CONFIG.metro.swipePxPerBpm));});window.addEventListener('mouseup',()=>{sw=false;});el.addEventListener('touchstart',e=>{sw=true;sy=e.touches[0].clientY;sb=S.bpm;},{passive:true});window.addEventListener('touchmove',e=>{if(!sw)return;setBPM(sb+Math.round((sy-e.touches[0].clientY)/CONFIG.metro.swipePxPerBpm));},{passive:true});window.addEventListener('touchend',()=>{sw=false;});}
+setupBpmSwipe('bpm-num');setupBpmSwipe('bpm-num-tm');
+
+const clkT=document.getElementById('clk-t');ctxT=setupCanvas(clkT,220);
+
+function drawClock(ctx,size,elapsedSec,active){
+  if(!ctx)return;const cx=size/2,cy=size/2,R=cx-10;ctx.clearRect(0,0,size,size);const C=getCss();
+  const gs=S.goalMin*60,rem=Math.max(0,1-elapsedSec/gs),gA=(S.goalMin/60)*Math.PI*2-Math.PI/2,hA=-Math.PI/2+rem*(S.goalMin/60)*Math.PI*2;
+  ctx.beginPath();ctx.arc(cx,cy,R,0,Math.PI*2);ctx.strokeStyle=C.border;ctx.lineWidth=1.5;ctx.stroke();
+  if(rem>.001){ctx.beginPath();ctx.arc(cx,cy,R-6,-Math.PI/2,hA,false);ctx.strokeStyle=active?C.accent:C.accdim;ctx.lineWidth=5;ctx.lineCap='round';ctx.stroke();}
+  for(let i=0;i<60;i++){const a=(i/60)*Math.PI*2-Math.PI/2,big=i%5===0;ctx.beginPath();ctx.moveTo(cx+Math.cos(a)*(big?R-16:R-8),cy+Math.sin(a)*(big?R-16:R-8));ctx.lineTo(cx+Math.cos(a)*(R-2),cy+Math.sin(a)*(R-2));ctx.strokeStyle=big?(active?C.accent:C.muted):C.border;ctx.lineWidth=big?1.5:.5;ctx.lineCap='square';ctx.stroke();if(big){const fs=size<180?8:10;ctx.font=`500 ${fs}px "DM Mono",monospace`;ctx.fillStyle=active?C.text:C.muted;ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(String(i),cx+Math.cos(a)*(R-(size<180?24:28)),cy+Math.sin(a)*(R-(size<180?24:28)));}}
+  ctx.beginPath();ctx.moveTo(cx+Math.cos(gA)*(R-16),cy+Math.sin(gA)*(R-16));ctx.lineTo(cx+Math.cos(gA)*(R-2),cy+Math.sin(gA)*(R-2));ctx.strokeStyle=C.accent;ctx.lineWidth=2.5;ctx.lineCap='round';ctx.stroke();
+  ctx.beginPath();ctx.arc(cx+Math.cos(gA)*(R-21),cy+Math.sin(gA)*(R-21),2.5,0,Math.PI*2);ctx.fillStyle=C.accent;ctx.fill();
+  ctx.lineCap='round';ctx.strokeStyle=active?C.hand:C.muted;ctx.lineWidth=2.5;ctx.beginPath();ctx.moveTo(cx-Math.cos(hA)*R*.12,cy-Math.sin(hA)*R*.12);ctx.lineTo(cx+Math.cos(hA)*R*.72,cy+Math.sin(hA)*R*.72);ctx.stroke();
+  ctx.beginPath();ctx.arc(cx,cy,4,0,Math.PI*2);ctx.fillStyle=active?C.accent:C.muted;ctx.fill();ctx.beginPath();ctx.arc(cx,cy,1.8,0,Math.PI*2);ctx.fillStyle=C.bg;ctx.fill();
 }
 
-function noteStr(f) {
-  if(!f)return '';
-  const s=12*Math.log2(f/440),midi=Math.round(s)+69;
-  return NOTES[((midi%12)+12)%12]+(Math.floor(midi/12)-1)+' · '+f+'Hz';
-}
-
-// ── 시계 그리기 ────────────────────────────
-const cv=document.getElementById('clk'), ctx=cv.getContext('2d');
-
-function drawClock(elapsedSec,active){
-  const W=cv.width,H=cv.height,cx=W/2,cy=H/2,R=cx-18;
-  ctx.clearRect(0,0,W,H);
-  const st=getComputedStyle(document.documentElement);
-  const C={
-    accent:st.getPropertyValue('--accent').trim(),
-    accdim:st.getPropertyValue('--accdim').trim(),
-    border:st.getPropertyValue('--border').trim(),
-    muted: st.getPropertyValue('--muted').trim(),
-    text:  st.getPropertyValue('--text').trim(),
-    bg:    st.getPropertyValue('--bg').trim(),
-    hand:  st.getPropertyValue('--hand').trim(),
-  };
-  const goalSec=goalMin*60;
-  const remaining=Math.max(0,1-elapsedSec/goalSec);
-  const goalAngle=(goalMin/60)*Math.PI*2-Math.PI/2;
-  const handAngle=-Math.PI/2+remaining*(goalMin/60)*Math.PI*2;
-
-  ctx.beginPath();ctx.arc(cx,cy,R,0,Math.PI*2);
-  ctx.strokeStyle=C.border;ctx.lineWidth=2.5;ctx.stroke();
-
-  if(remaining>0.001){
-    ctx.beginPath();ctx.arc(cx,cy,R-8,-Math.PI/2,handAngle,false);
-    ctx.strokeStyle=active?C.accent:C.accdim;
-    ctx.lineWidth=7;ctx.lineCap='round';ctx.stroke();
-  }
-
-  for(let i=0;i<60;i++){
-    const a=(i/60)*Math.PI*2-Math.PI/2;
-    const big=i%5===0;
-    ctx.beginPath();
-    ctx.moveTo(cx+Math.cos(a)*(big?R-25:R-13),cy+Math.sin(a)*(big?R-25:R-13));
-    ctx.lineTo(cx+Math.cos(a)*(R-4),          cy+Math.sin(a)*(R-4));
-    ctx.strokeStyle=big?(active?C.accent:C.muted):C.border;
-    ctx.lineWidth=big?2:0.6;ctx.lineCap='square';ctx.stroke();
-    if(big){
-      ctx.font='500 12px "DM Mono",monospace';
-      ctx.fillStyle=active?C.text:C.muted;
-      ctx.textAlign='center';ctx.textBaseline='middle';
-      ctx.fillText(String(i),cx+Math.cos(a)*(R-40),cy+Math.sin(a)*(R-40));
-    }
-  }
-
-  ctx.beginPath();
-  ctx.moveTo(cx+Math.cos(goalAngle)*(R-25),cy+Math.sin(goalAngle)*(R-25));
-  ctx.lineTo(cx+Math.cos(goalAngle)*(R-4), cy+Math.sin(goalAngle)*(R-4));
-  ctx.strokeStyle=C.accent;ctx.lineWidth=3.5;ctx.lineCap='round';ctx.stroke();
-  ctx.beginPath();
-  ctx.arc(cx+Math.cos(goalAngle)*(R-31),cy+Math.sin(goalAngle)*(R-31),3.5,0,Math.PI*2);
-  ctx.fillStyle=C.accent;ctx.fill();
-
-  ctx.lineCap='round';
-  ctx.strokeStyle=active?C.hand:C.muted;ctx.lineWidth=3.5;
-  ctx.beginPath();
-  ctx.moveTo(cx-Math.cos(handAngle)*R*0.13,cy-Math.sin(handAngle)*R*0.13);
-  ctx.lineTo(cx+Math.cos(handAngle)*R*0.74,cy+Math.sin(handAngle)*R*0.74);
-  ctx.stroke();
-
-  ctx.beginPath();ctx.arc(cx,cy,5,0,Math.PI*2);ctx.fillStyle=active?C.accent:C.muted;ctx.fill();
-  ctx.beginPath();ctx.arc(cx,cy,2.2,0,Math.PI*2);ctx.fillStyle=C.bg;ctx.fill();
-}
-
-// ── 메인 루프 ──────────────────────────────
 function frame(){
-  const now=Date.now(),dt=now-lastMs;lastMs=now;
-  const d=new Date(now);
-  const ts=String(d.getHours()).padStart(2,'0')+':'+
-           String(d.getMinutes()).padStart(2,'0')+':'+
-           String(d.getSeconds()).padStart(2,'0');
-  document.getElementById('h-now').textContent=ts;
-  document.getElementById('c-now').textContent=ts;
-
-  if(running&&!paused&&analyser){
-    const fftPass = fftGate();
-
-    // YAMNet: FFT 통과했을 때만, 일정 간격으로 실행
-    if(fftPass && now-lastYamnetMs > D.YAMNET_INTERVAL_MS){
-      lastYamnetMs=now;
-      runYamnet(); // 비동기, 결과는 yamnetOK에 반영
-    }
-    // FFT 안 통과하면 yamnetOK 리셋
-    if(!fftPass) yamnetOK=false;
-
-    // 최종 판정: FFT 통과 AND (YAMNet 통과 OR YAMNet 미준비)
-    const detected = fftPass && (yamnetOK || !yamnetReady);
-    hold = detected ? D.HOLD : Math.max(0,hold-1);
-    strOK = hold > 0;
-
-    const sdot=document.getElementById('sdot');
-    const stxt=document.getElementById('stxt');
-    const noteEl=document.getElementById('note');
-
-    if(strOK){
-      animMs+=dt;
-      sdot.className='on';
-      stxt.textContent = yamnetReady ? '현악기 감지됨' : '소리 감지됨';
-      if(fftPass&&detFreq){noteEl.textContent=noteStr(detFreq);noteEl.classList.add('show');}
-      refresh();
-    } else {
-      if (sessSec > 0) sessSec = 0;  // 연주 끊기면 연속 리셋
-      sdot.className='mic';
-      stxt.textContent='연주를 시작하세요';
-      noteEl.classList.remove('show');
-    }
+  const now=Date.now(),dt=now-lastFrameMs;lastFrameMs=now;
+  const d=new Date(now),ts=String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0')+':'+String(d.getSeconds()).padStart(2,'0');
+  document.getElementById('t-now').textContent=ts;document.getElementById('p-now').textContent=ts;document.getElementById('tm-now').textContent=ts;
+  if(S.running&&!S.paused&&A.analyserFFT){
+    const doDetect=S.mode!=='tools';let fftPass=false;
+    if(doDetect){fftPass=fftDetect();if(fftPass&&now-S.lastYamnetMs>CONFIG.yamnet.intervalMs&&A.yamnet){S.lastYamnetMs=now;runYamnet();}if(!fftPass)S.yamnetOK=false;}
+    const detected=doDetect&&fftPass&&(S.yamnetOK||!A.yamnet);
+    S.holdFrames=detected?CONFIG.detect.holdFrames:Math.max(0,S.holdFrames-1);S.strOK=S.holdFrames>0;
+    const sfx=S.mode==='timer'?'t':S.mode==='practice'?'p':'tm';
+    if(S.strOK){S.animMs+=dt;const ne=document.getElementById('note-'+sfx);setDot(S.mode,'on','Playing');if(ne&&fftPass&&S.detFreq){ne.textContent=freqToName(S.detFreq);ne.classList.add('show');}}
+    else{setDot(S.mode,'mic','Listening...');const ne=document.getElementById('note-'+sfx);if(ne)ne.classList.remove('show');}
   }
-
-  drawClock(animMs/1000,strOK);
+  if(S.running&&!S.paused&&A.analyserTD&&(S.mode==='practice'||S.mode==='tools')){
+    if(!A.isClick){A.analyserTD.getFloatTimeDomainData(A.tdBuf);const raw=yin(A.tdBuf,A.sampleRate);if(S.mode==='practice')updateTunerUI(raw,'tuner-note-big','tuner-cents','tuner-hz',S.histData,'tuner-history',S.tolCents);else updateTunerUI(raw,'tm-tuner-note','tm-cents','tm-hz',S.histDataTM,'tuner-history-tm',S.tolCentsTM);}
+  }
+  drawClock(ctxT,220,S.animMs/1000,S.strOK);
+  if(S.mode==='practice'&&S.timerOpen&&ctxP)drawClock(ctxP,clockPSize,S.animMs/1000,S.strOK);
   requestAnimationFrame(frame);
 }
-
-lastMs=Date.now();
-requestAnimationFrame(frame);
+window.addEventListener('resize',()=>{resizePCanvases();resizeTMCanvas();});
+setTimeout(()=>{resizePCanvases();resizeTMCanvas();},200);
+lastFrameMs=Date.now();requestAnimationFrame(frame);
 </script>
 </body>
 </html>
