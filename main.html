@@ -162,7 +162,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;heigh
   #timer-body.shut,#tuner-body.shut{max-height:9999px!important;opacity:1!important;}
   #timer-card{flex:1!important;min-width:0;}
   #tuner-card{flex:2!important;min-width:0;}
-  #metro-card{flex:0 0 260px;}
+  #metro-card{flex:0 0 260px!important;}
 }
 
 /* ── iPad Pro 12.9" (1024px ~) ── */
@@ -173,7 +173,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;heigh
   .timer-center,#practice-body,
   #practice-screen .hrow,
   #practice-screen .sbar{max-width:820px;}
-  #metro-card{flex:0 0 320px;}
+  #metro-card{flex:0 0 320px!important;}
 }
 </style>
 </head>
@@ -705,6 +705,7 @@ function drawClock(ctx,size,elapsedSec,active){
   ctx.beginPath();ctx.arc(cx,cy,4,0,Math.PI*2);ctx.fillStyle=active?C.accent:C.muted;ctx.fill();ctx.beginPath();ctx.arc(cx,cy,1.8,0,Math.PI*2);ctx.fillStyle=C.bg;ctx.fill();
 }
 
+let _rafId=null;
 let _isTablet=window.matchMedia('(min-width:700px)').matches;
 function startRaf(){if(!_rafId){lastFrameMs=Date.now();_rafId=requestAnimationFrame(frame);}}
 function stopRaf(){if(_rafId){cancelAnimationFrame(_rafId);_rafId=null;}}
