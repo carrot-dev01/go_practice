@@ -112,9 +112,9 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;heigh
 .metro-bpm-row{display:flex;align-items:center;gap:6px;}
 .bpm-num-el{font-family:'DM Mono',monospace;font-size:36px;color:var(--text);line-height:1;min-width:64px;text-align:center;cursor:ns-resize;user-select:none;touch-action:none;}
 .metro-adj{display:flex;align-items:center;gap:4px;flex:1;}
-.adj-btn{flex:1;height:30px;padding:0;background:transparent;border:.5px solid var(--border);border-radius:7px;color:var(--muted);font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:border-color .15s,color .15s;}
+.adj-btn{flex:1;height:44px;padding:0;background:transparent;border:.5px solid var(--border);border-radius:7px;color:var(--muted);font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:border-color .15s,color .15s;}
 .adj-btn:hover{border-color:var(--accent);color:var(--accent);}
-.tap-btn{flex:0 0 58px;height:30px;padding:0 3px;background:transparent;border:.5px solid var(--border);border-radius:7px;color:var(--muted);font-family:'DM Sans',sans-serif;font-size:8.5px;cursor:pointer;letter-spacing:.03em;display:flex;align-items:center;justify-content:center;white-space:nowrap;transition:border-color .15s,color .15s;}
+.tap-btn{flex:0 0 58px;height:44px;padding:0 3px;background:transparent;border:.5px solid var(--border);border-radius:7px;color:var(--muted);font-family:'DM Sans',sans-serif;font-size:8.5px;cursor:pointer;letter-spacing:.03em;display:flex;align-items:center;justify-content:center;white-space:nowrap;transition:border-color .15s,color .15s;}
 .tap-btn:hover{border-color:var(--accent);color:var(--accent);}
 .metro-bottom{display:grid;grid-template-columns:1fr 1fr 1fr;gap:5px;align-items:stretch;}
 .ts-grid{display:grid;grid-template-columns:1fr 1fr;gap:4px;}
@@ -134,6 +134,47 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;heigh
 /* 토스트 */
 #toast{position:fixed;bottom:2rem;left:50%;transform:translateX(-50%) translateY(14px);background:var(--surface);border:.5px solid var(--border);border-radius:10px;padding:10px 20px;font-size:13px;color:var(--text);opacity:0;pointer-events:none;transition:opacity .3s,transform .3s;white-space:nowrap;z-index:99;}
 #toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+/* ── Safe area (홈바 겹침 방지) ── */
+.screen{padding-bottom:max(1rem,env(safe-area-inset-bottom));}
+
+/* ── 아이폰 가로모드 차단 ── */
+@media(orientation:landscape)and(max-height:500px){
+  .screen::before{content:'화면을 세로로 돌려주세요';position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:var(--bg);font-size:14px;color:var(--muted);z-index:999;pointer-events:all;}
+}
+
+/* ── 태블릿 (iPad Mini 768px ~) ── */
+@media(min-width:700px){
+  /* 공통 요소 확장 */
+  .w,.hrow,.sbar,.btn-row,
+  #mode-select,#model-badge,#title-block,
+  #drum-section,#play-info,#pwrap,#stats-t,
+  .timer-center{max-width:620px;}
+
+  /* Practice: 2컬럼 */
+  #practice-screen .hrow,
+  #practice-screen .sbar{max-width:620px;}
+  #practice-body{flex-direction:row;align-items:stretch;max-width:620px;}
+
+  /* 태블릿에서 아코디언 헤더 숨김 — 둘 다 항상 펼침 */
+  #timer-hdr,#tuner-hdr{display:none;}
+  #timer-body,#tuner-body{max-height:9999px!important;opacity:1!important;}
+  #timer-body.shut,#tuner-body.shut{max-height:9999px!important;opacity:1!important;}
+  #timer-card{flex:1!important;min-width:0;}
+  #tuner-card{flex:2!important;min-width:0;}
+  #metro-card{flex:0 0 260px;}
+}
+
+/* ── iPad Pro 12.9" (1024px ~) ── */
+@media(min-width:1000px){
+  .w,.hrow,.sbar,.btn-row,
+  #mode-select,#model-badge,#title-block,
+  #drum-section,#play-info,#pwrap,#stats-t,
+  .timer-center,#practice-body,
+  #practice-screen .hrow,
+  #practice-screen .sbar{max-width:820px;}
+  #metro-card{flex:0 0 320px;}
+}
 </style>
 </head>
 <body>
@@ -199,17 +240,11 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;heigh
       <!-- Tuner — 반원 게이지 + 바늘 -->
       <div class="pf">
         <svg width="36" height="36" viewBox="0 0 36 36" fill="none" stroke="var(--muted)" stroke-width="1.2" stroke-linecap="round">
-          <!-- 반원 게이지 -->
           <path d="M6 28 A13 13 0 0 1 30 28" stroke-width="1.2"/>
-          <!-- 눈금 왼쪽 -->
           <line x1="6.5" y1="26" x2="8.5" y2="23.5"/>
-          <!-- 눈금 가운데 (위) -->
           <line x1="18" y1="15" x2="18" y2="18"/>
-          <!-- 눈금 오른쪽 -->
           <line x1="29.5" y1="26" x2="27.5" y2="23.5"/>
-          <!-- 바늘 (약간 오른쪽으로 기울어짐) -->
           <line x1="18" y1="28" x2="24" y2="19" stroke-width="1.4"/>
-          <!-- 중심점 -->
           <circle cx="18" cy="28" r="1.8" fill="var(--muted)" stroke="none"/>
         </svg>
         <span class="pf-label">Tuner</span>
@@ -407,12 +442,11 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;heigh
 <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.20.0/dist/tf.min.js"></script>
 <script>
 'use strict';
-const CONFIG={detect:{fftSize:4096,fftSmooth:.88,hzMin:80,hzMax:4800,noiseFloor:-52,peakMargin:4,harmonicDrop:35,harmonicMin:2,holdFrames:60},yamnet:{intervalMs:975,threshold:.50,sampleRate:16000,inputLen:15600,stringIdx:new Set([132,133,134,135,136,137,138,139,140,141,142,143,144,145,146,147])},tuner:{fftSize:4096,yinThreshold:.10,rmsMin:.008,lockFrames:3,smoothing:.1,histLen:150},metro:{bpmMin:20,bpmMax:160,tapWindowMs:3000,lookaheadS:.12,intervalMs:25,clickDurS:.06,muteTunerMs:80,swipePxPerBpm:2}};
+const CONFIG={detect:{fftSize:4096,fftSmooth:.88,hzMin:80,hzMax:4800,noiseFloor:-52,peakMargin:4,harmonicDrop:35,harmonicMin:2,holdFrames:60},yamnet:{intervalMs:975,threshold:.50,sampleRate:16000,inputLen:15600,stringIdx:new Set([132,133,134,135,136,137,138,139,140,141,142,143,144,145,146,147])},tuner:{fftSize:4096,yinThreshold:.10,rmsMin:.008,lockFrames:2,smoothing:.3,histLen:150},metro:{bpmMin:20,bpmMax:200,tapWindowMs:3000,lookaheadS:.12,intervalMs:25,clickDurS:.06,muteTunerMs:80,swipePxPerBpm:2}};
 const NOTES=['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
 const S={mode:'tools',micReady:false,running:false,paused:false,strOK:false,detFreq:0,holdFrames:0,yamnetOK:false,lastYamnetMs:0,goalMin:30,totalSec:0,streakSec:0,elapsedSec:0,goalDone:false,animMs:0,tolCents:10,tolCentsTM:10,smoothFreq:-1,lockedMidi:-1,lockCount:0,histData:new Array(150).fill(null),histDataTM:new Array(150).fill(null),bpm:100,timeSig:4,subDiv:1,metroPlaying:false,tunerOpen:true,timerOpen:false};
 const A={micStream:null,micAC:null,analyserFFT:null,analyserTD:null,fftBuf:null,tdBuf:null,binCount:0,sampleRate:44100,scriptProc:null,pcm16k:new Float32Array(31200),pcmPos:0,isClick:false,wakeLock:null,yamnet:null,yamnetReady:false,yamnetRunning:false,metroTimer:null,metroNext:0,metroTick:0};
 
-// CSS 캐싱
 let _css=null,_cssDark=null;
 function getCss(){const dark=window.matchMedia('(prefers-color-scheme:dark)').matches;if(_css&&_cssDark===dark)return _css;_cssDark=dark;const st=getComputedStyle(document.documentElement);return _css={accent:st.getPropertyValue('--accent').trim(),accdim:st.getPropertyValue('--accdim').trim(),border:st.getPropertyValue('--border').trim(),muted:st.getPropertyValue('--muted').trim(),text:st.getPropertyValue('--text').trim(),bg:st.getPropertyValue('--bg').trim(),hand:st.getPropertyValue('--hand').trim(),green:st.getPropertyValue('--green').trim()};}
 window.matchMedia('(prefers-color-scheme:dark)').addEventListener('change',()=>{_css=null;});
@@ -431,7 +465,6 @@ async function loadYamnet(){
 }
 loadYamnet();
 
-// 드럼 피커
 const IH=40,DMIN=1,DMAX=60;
 const dOuter=document.getElementById('drum-outer'),dInner=document.getElementById('drum-inner');
 let drumY=0,drumDrag=false,drumSY=0,drumSDY=0;
@@ -453,10 +486,12 @@ function selectMode(m){
   const isPlay=m==='tools';
   document.getElementById('drum-section').style.display=isPlay?'none':'';
   const pi=document.getElementById('play-info');
-  if(isPlay)pi.classList.add('visible'); else pi.classList.remove('visible');
+  if(isPlay)pi.classList.add('visible');else pi.classList.remove('visible');
 }
 
+let _micOpening=false;
 async function openMic(){
+  if(_micOpening)return;_micOpening=true;
   try{
     A.micStream=await navigator.mediaDevices.getUserMedia({audio:true});
     A.micAC=new(window.AudioContext||window.webkitAudioContext)();A.sampleRate=A.micAC.sampleRate;
@@ -465,9 +500,10 @@ async function openMic(){
     A.scriptProc=A.micAC.createScriptProcessor(4096,1,1);
     const ratio=A.sampleRate/CONFIG.yamnet.sampleRate;
     A.scriptProc.onaudioprocess=e=>{const inp=e.inputBuffer.getChannelData(0);for(let i=0;i<inp.length;i+=ratio){A.pcm16k[A.pcmPos%A.pcm16k.length]=inp[Math.floor(i)];A.pcmPos++;}};
+    if(A.micAC.state==='suspended')await A.micAC.resume();
     const src=A.micAC.createMediaStreamSource(A.micStream);src.connect(A.analyserFFT);src.connect(A.analyserTD);src.connect(A.scriptProc);A.scriptProc.connect(A.micAC.destination);
     S.micReady=true;updateHomeBtn();
-  }catch(e){toast('마이크 오류: '+e.message);}
+  }catch(e){toast('마이크 오류: '+e.message);}finally{_micOpening=false;}
 }
 function mainBtnClick(){if(!S.micReady)openMic();else goStart();}
 
@@ -487,22 +523,37 @@ function goStart(){
   if(S.mode==='tools')setTimeout(()=>resizeTMCanvas(),50);
   if(S.mode!=='tools'){clearInterval(sessionTimer);sessionTimer=setInterval(()=>{if(!S.running||S.paused)return;S.elapsedSec++;if(S.strOK){S.totalSec++;S.streakSec++;}else{S.streakSec=0;}refreshUI();},1000);}
   navigator.wakeLock?.request('screen').then(wl=>A.wakeLock=wl).catch(()=>{});
+  startRaf();
 }
 function togglePause(w){
   S.paused=!S.paused;const btn=document.getElementById(w==='t'?'pause-t':'pause-p');
   if(S.paused){btn.textContent='연습 재개';btn.classList.replace('warn','accent');S.strOK=false;S.holdFrames=0;S.yamnetOK=false;S.streakSec=0;if(S.metroPlaying)stopMetro();setDot(w==='t'?'timer':'practice','','Paused');}
   else{btn.textContent='연습 중지';btn.classList.replace('accent','warn');setDot(w==='t'?'timer':'practice','mic','Listening...');}
 }
-function endSession(){S.running=false;S.paused=false;S.strOK=false;S.holdFrames=0;clearInterval(sessionTimer);if(S.metroPlaying)stopMetro();['timer-screen','practice-screen','tools-screen'].forEach(id=>document.getElementById(id).classList.add('hidden'));document.getElementById('home').classList.remove('hidden');A.wakeLock?.release();A.wakeLock=null;}
+function endSession(){
+  S.running=false;S.paused=false;S.strOK=false;S.holdFrames=0;
+  clearInterval(sessionTimer);
+  if(S.metroPlaying)stopMetro();
+  ['timer-screen','practice-screen','tools-screen'].forEach(id=>document.getElementById(id).classList.add('hidden'));
+  document.getElementById('home').classList.remove('hidden');
+  // 마이크 + 오디오 컨텍스트 완전 해제
+  A.micStream?.getTracks().forEach(t=>t.stop());
+  A.scriptProc?.disconnect();
+  A.micAC?.close();
+  A.micStream=null;A.micAC=null;A.analyserFFT=null;A.analyserTD=null;A.scriptProc=null;A.pcmPos=0;
+  S.micReady=false;updateHomeBtn();
+  A.wakeLock?.release();A.wakeLock=null;
+  stopRaf();
+}
 function setDot(mode,cls,txt){const map={timer:'t',practice:'p',tools:'tm'};const s=map[mode]||'t';const dot=document.getElementById('sdot-'+s);if(dot)dot.className='sdot'+(cls?' '+cls:'');const el=document.getElementById('stxt-'+s);if(el)el.textContent=txt;}
 
-// 아코디언 — 상호 배타적
 function togglePSec(sec){
   if(sec==='timer'){if(!S.timerOpen){S.timerOpen=true;S.tunerOpen=false;}else{S.timerOpen=false;S.tunerOpen=true;}}
   else{if(!S.tunerOpen){S.tunerOpen=true;S.timerOpen=false;}else S.tunerOpen=false;}
   applyPSec();
 }
 function applyPSec(instant=false){
+  if(window.matchMedia('(min-width:700px)').matches)return; // 태블릿은 CSS가 처리
   const tc=document.getElementById('tuner-card'),timc=document.getElementById('timer-card');
   const tb=document.getElementById('tuner-body'),timb=document.getElementById('timer-body');
   const th=document.getElementById('tuner-hdr'),timh=document.getElementById('timer-hdr');
@@ -520,7 +571,7 @@ function refreshUI(){
   const gs=S.goalMin*60,rem=Math.max(0,gs-S.totalSec),pct=(S.totalSec/gs*100).toFixed(1)+'%';
   document.getElementById('t-left').textContent=fmtMMSS(rem);document.getElementById('vt-total').textContent=fmtSec(S.totalSec);document.getElementById('vt-streak').textContent=fmtSec(S.streakSec);document.getElementById('pbar').style.width=pct;
   document.getElementById('p-elapsed').textContent=fmtMMSS(S.elapsedSec);document.getElementById('p-detected').textContent=fmtMMSS(S.totalSec);document.getElementById('vp-total').textContent=fmtSec(S.totalSec);document.getElementById('vp-streak').textContent=fmtSec(S.streakSec);document.getElementById('pbar-p').style.width=pct;
-  if(S.running&&!S.goalDone&&S.totalSec>=gs){S.goalDone=true;toast('목표 달성! 수고하셨어요 🎻');}
+  if(S.running&&!S.goalDone&&S.totalSec>=gs){S.goalDone=true;toast('Goal reached! Great work 🎻');}
 }
 function toast(msg){const el=document.getElementById('toast');el.textContent=msg;el.classList.add('show');setTimeout(()=>el.classList.remove('show'),3000);}
 
@@ -537,15 +588,15 @@ function fftDetect(){
 }
 async function runYamnet(){
   const Y=CONFIG.yamnet;if(!A.yamnet||A.yamnetRunning||A.pcmPos<Y.inputLen)return;A.yamnetRunning=true;
-  try{const s=new Float32Array(Y.inputLen),st=A.pcmPos-Y.inputLen;for(let i=0;i<Y.inputLen;i++)s[i]=A.pcm16k[(st+i)%A.pcm16k.length];const wf=tf.tensor1d(s),res=A.yamnet.predict(wf),sc=res instanceof Array?res[0]:res,arr=await sc.array(),flat=Array.isArray(arr[0])?arr[0]:arr;let mx=0;for(const idx of Y.stringIdx){if(flat[idx]>mx)mx=flat[idx];}S.yamnetOK=mx>=Y.threshold;wf.dispose();if(sc!==res)sc.dispose();}
+  try{const s=new Float32Array(Y.inputLen),st=A.pcmPos-Y.inputLen;for(let i=0;i<Y.inputLen;i++)s[i]=A.pcm16k[(st+i)%A.pcm16k.length];const wf=tf.tensor1d(s),res=A.yamnet.predict(wf);const sc=Array.isArray(res)?res[0]:res;const arr=await sc.array(),flat=Array.isArray(arr[0])?arr[0]:arr;let mx=0;for(const idx of Y.stringIdx){if(flat[idx]>mx)mx=flat[idx];}S.yamnetOK=mx>=Y.threshold;wf.dispose();// 모든 출력 텐서 해제 (scores, embeddings, spectrogram)
+  if(Array.isArray(res))res.forEach(t=>t.dispose());else if(sc!==res)sc.dispose();}
   catch(e){S.yamnetOK=true;}A.yamnetRunning=false;
 }
 function freqToName(f){if(!f)return'';const midi=Math.round(12*Math.log2(f/440))+69;return NOTES[((midi%12)+12)%12]+(Math.floor(midi/12)-1)+' · '+f+'Hz';}
 
-// YIN — 2프레임마다
 let _yf=0,_ly=-1;
 function yin(buf,sr){
-  if(++_yf%2!==0)return _ly;
+  if(++_yf%4!==0)return _ly;
   const N=buf.length,half=Math.floor(N/2);let rms=0;for(let i=0;i<N;i++)rms+=buf[i]*buf[i];if(Math.sqrt(rms/N)<CONFIG.tuner.rmsMin)return _ly=-1;
   const d=new Float32Array(half);for(let tau=1;tau<half;tau++){let s=0;for(let j=0;j<half;j++){const dif=buf[j]-buf[j+tau];s+=dif*dif;}d[tau]=s;}
   const c=new Float32Array(half);c[0]=1;let run=0;for(let tau=1;tau<half;tau++){run+=d[tau];c[tau]=run===0?0:d[tau]/(run/tau);}
@@ -578,28 +629,40 @@ function drawHistory(hist,canvasId,tol){
   c.clearRect(0,0,W,H);c.fillStyle=C.bg;c.fillRect(0,0,W,H);
   const ppc=(W/2)/50;c.fillStyle=C.green+'28';c.fillRect(W/2-tol*ppc,0,tol*2*ppc,H);
   c.strokeStyle=C.border;c.lineWidth=.5;c.setLineDash([2,4]);c.beginPath();c.moveTo(W/2,0);c.lineTo(W/2,H);c.stroke();c.setLineDash([]);
-  const N=CONFIG.tuner.histLen,rH=H/N;c.lineWidth=2;c.lineCap='round';c.lineJoin='round';let st=false;
-  for(let i=0;i<N;i++){const v=hist[i],y=(i+.5)*rH;if(v===null){if(st){c.stroke();st=false;}continue;}const x=W/2+Math.max(-50,Math.min(50,v))*ppc,inT=Math.abs(v)<=tol;c.globalAlpha=.2+((N-1-i)/N)*.8;if(!st){c.beginPath();c.moveTo(x,y);c.strokeStyle=inT?C.green:C.muted;st=true;}else c.lineTo(x,y);}
-  if(st)c.stroke();c.globalAlpha=1;
+  const N=CONFIG.tuner.histLen,rH=H/N;c.lineWidth=2;c.lineCap='round';c.lineJoin='round';
+  // 세그먼트별로 stroke() 호출해야 globalAlpha 페이드가 실제로 적용됨
+  for(let i=0;i<N-1;i++){
+    const v0=hist[i],v1=hist[i+1];if(v0===null||v1===null)continue;
+    const y0=(i+.5)*rH,y1=(i+1.5)*rH;
+    const x0=W/2+Math.max(-50,Math.min(50,v0))*ppc;
+    const x1=W/2+Math.max(-50,Math.min(50,v1))*ppc;
+    const inT=Math.abs(v0)<=tol;
+    c.globalAlpha=.15+((N-1-i)/N)*.85;
+    c.strokeStyle=inT?C.green:C.muted;
+    c.beginPath();c.moveTo(x0,y0);c.lineTo(x1,y1);c.stroke();
+  }c.globalAlpha=1;
 }
 function setupCanvas(el,size){if(!el)return null;const dpr=window.devicePixelRatio||1;el.width=size*dpr;el.height=size*dpr;el.style.width=size+'px';el.style.height=size+'px';const ctx=el.getContext('2d');ctx.scale(dpr,dpr);return ctx;}
 
 function resizePCanvases(){
   const th=document.getElementById('tuner-history');
   if(th&&th.offsetParent!==null&&th.offsetWidth>0){const dpr=window.devicePixelRatio||1,w=th.offsetWidth,h=Math.max(60,th.offsetHeight||80);th.width=w*dpr;th.height=h*dpr;th.style.width=w+'px';th.style.height=h+'px';th.getContext('2d').scale(dpr,dpr);}
-  // Practice 타이머 시계 — 최대 150px
   const cp=document.getElementById('clk-p'),inner=document.getElementById('timer-sub-inner');
   if(cp&&inner&&inner.offsetWidth>0){const size=Math.min(inner.offsetWidth,150);clockPSize=size;ctxP=setupCanvas(cp,size);}
 }
 function resizeTMCanvas(){const th=document.getElementById('tuner-history-tm');if(!th||!th.offsetWidth)return;const dpr=window.devicePixelRatio||1,w=th.offsetWidth,h=th.offsetHeight||200;th.width=w*dpr;th.height=h*dpr;th.style.width=w+'px';th.style.height=h+'px';th.getContext('2d').scale(dpr,dpr);}
 
+// WakeLock 재취득
+document.addEventListener('visibilitychange',async()=>{if(S.running&&document.visibilityState==='visible'){try{A.wakeLock=await navigator.wakeLock?.request('screen');}catch(e){}}});
+
 let tapTimes=[];
-function getTickInterval(){const b=60/S.bpm;return S.subDiv==='d'?b/2:b/S.subDiv;}
-function getTotalTicks(){return S.subDiv==='d'?S.timeSig*2:S.timeSig*S.subDiv;}
+// 붓점: 4분음표를 3등분 (♩. = ♩×1.5 = ♪×3)
+function getTickInterval(){const b=60/S.bpm;if(S.timeSig===6)return b/2;return S.subDiv==='d'?b/3:b/S.subDiv;}
+function getTotalTicks(){return S.subDiv==='d'?S.timeSig*3:S.timeSig*S.subDiv;}
 function scheduleClick(time,tick){
   if(!A.micAC)return;const osc=A.micAC.createOscillator(),gain=A.micAC.createGain();osc.connect(gain);gain.connect(A.micAC.destination);
-  let freq,vol;if(S.subDiv==='d'){const b1=tick===0,bs=tick%2===0;freq=b1?1500:bs?1000:700;vol=b1?.6:bs?.38:.16;}else{const b1=tick===0,ib=tick%S.subDiv===0;freq=b1?1500:ib?1000:700;vol=b1?.6:ib?.38:.16;}
-  gain.gain.setValueAtTime(vol,time);gain.gain.exponentialRampToValueAtTime(.001,time+.04);osc.frequency.value=freq;osc.start(time);osc.stop(time+CONFIG.metro.clickDurS);
+  let freq,vol;if(S.subDiv==='d'){const b1=tick===0,bs=tick%3===0;freq=b1?1500:bs?1000:700;vol=b1?.6:bs?.38:.16;}else{const b1=tick===0,ib=tick%S.subDiv===0;freq=b1?1500:ib?1000:700;vol=b1?.6:ib?.38:.16;}
+  gain.gain.setValueAtTime(vol,time);gain.gain.exponentialRampToValueAtTime(.001,time+.04);osc.frequency.value=freq;osc.onended=()=>{osc.disconnect();gain.disconnect();};osc.start(time);osc.stop(time+CONFIG.metro.clickDurS);
   const dl=Math.max(0,(time-A.micAC.currentTime)*1000);setTimeout(()=>litBeat(tick),dl);setTimeout(()=>{A.isClick=true;},dl-5);setTimeout(()=>{A.isClick=false;},dl+CONFIG.metro.muteTunerMs);
 }
 function metroSched(){while(A.metroNext<A.micAC.currentTime+CONFIG.metro.lookaheadS){scheduleClick(A.metroNext,A.metroTick);A.metroTick=(A.metroTick+1)%getTotalTicks();A.metroNext+=getTickInterval();}A.metroTimer=setTimeout(metroSched,CONFIG.metro.intervalMs);}
@@ -609,11 +672,21 @@ function toggleMetro(){if(!A.micAC){toast('마이크를 먼저 켜주세요');re
 function updateMetroBtn(on){['metro-start-p','metro-start-tm'].forEach(id=>{const el=document.getElementById(id);if(!el)return;el.innerHTML=on?'Stop<br>Metronome':'Start<br>Metronome';el.classList.toggle('on',on);});}
 function setBPM(v){S.bpm=Math.max(CONFIG.metro.bpmMin,Math.min(CONFIG.metro.bpmMax,v));document.querySelectorAll('#bpm-num,#bpm-num-tm').forEach(el=>{if(el)el.textContent=S.bpm;});if(S.metroPlaying){stopMetro();startMetro();}}
 function adjBPM(d){setBPM(S.bpm+d);}
-function setTS(v){S.timeSig=v;document.querySelectorAll('[data-ts],[data-ts2]').forEach(b=>{const val=b.dataset.ts??b.dataset.ts2;if(val)b.classList.toggle('on',+val===v);});buildBeatVis();if(S.metroPlaying){stopMetro();startMetro();}}
+function setTS(v){
+  S.timeSig=v;
+  document.querySelectorAll('[data-ts],[data-ts2]').forEach(b=>{const val=b.dataset.ts??b.dataset.ts2;if(val)b.classList.toggle('on',+val===v);});
+  // 6/8이면 서브디비전 패널 비활성화 (8분음표 6개 고정)
+  const is68=v===6;
+  ['sd-grid-p','sd-grid-tm'].forEach(id=>{const el=document.getElementById(id);if(el){el.style.opacity=is68?'0.3':'1';el.style.pointerEvents=is68?'none':'auto';}});
+  // 6/8: subDiv=1 고정, ♩ 버튼 라벨을 ♪로 교체
+  document.querySelectorAll('[data-sd="1"],[data-sd2="1"]').forEach(b=>{b.textContent=is68?'♪':'♩';});
+  if(is68){S.subDiv=1;document.querySelectorAll('[data-sd],[data-sd2]').forEach(b=>{const val=b.dataset.sd??b.dataset.sd2;if(val)b.classList.toggle('on',val==='1');});}
+  buildBeatVis();if(S.metroPlaying){stopMetro();startMetro();}
+}
 function setSD(v){S.subDiv=v;document.querySelectorAll('[data-sd],[data-sd2]').forEach(b=>{const val=b.dataset.sd??b.dataset.sd2;if(val)b.classList.toggle('on',val===String(v));});buildBeatVis();if(S.metroPlaying){stopMetro();startMetro();}}
-function buildBeatVis(){['beat-vis-p','beat-vis-tm'].forEach(id=>{const wrap=document.getElementById(id);if(!wrap)return;wrap.innerHTML='';const total=getTotalTicks();for(let i=0;i<total;i++){const dot=document.createElement('div');dot.className='bd '+(S.subDiv==='d'?(i%2===0?'beat':'subdiv'):(i%S.subDiv===0?'beat':'subdiv'));dot.dataset.tick=i;wrap.appendChild(dot);}});}
+function buildBeatVis(){['beat-vis-p','beat-vis-tm'].forEach(id=>{const wrap=document.getElementById(id);if(!wrap)return;wrap.innerHTML='';const total=getTotalTicks();for(let i=0;i<total;i++){const dot=document.createElement('div');dot.className='bd '+(S.subDiv==='d'?(i%3===0?'beat':'subdiv'):(i%S.subDiv===0?'beat':'subdiv'));dot.dataset.tick=i;wrap.appendChild(dot);}});}
 buildBeatVis();
-function litBeat(tick){document.querySelectorAll('.bd').forEach(d=>{d.classList.remove('lit-a','lit-b','lit-s');if(+d.dataset.tick!==tick)return;if(tick===0)d.classList.add('lit-a');else d.classList.add((S.subDiv==='d'?tick%2===0:tick%S.subDiv===0)?'lit-b':'lit-s');});}
+function litBeat(tick){document.querySelectorAll('.bd').forEach(d=>{d.classList.remove('lit-a','lit-b','lit-s');if(+d.dataset.tick!==tick)return;if(tick===0)d.classList.add('lit-a');else d.classList.add((S.subDiv==='d'?tick%3===0:tick%S.subDiv===0)?'lit-b':'lit-s');});}
 function tapTempo(){const now=Date.now();tapTimes=tapTimes.filter(t=>now-t<CONFIG.metro.tapWindowMs);tapTimes.push(now);if(tapTimes.length>=2){const avg=tapTimes.slice(1).reduce((s,t,i)=>s+(t-tapTimes[i]),0)/(tapTimes.length-1);setBPM(Math.round(60000/avg));}}
 function setupBpmSwipe(id){const el=document.getElementById(id);if(!el)return;let sy=0,sb=0,sw=false;el.addEventListener('mousedown',e=>{sw=true;sy=e.clientY;sb=S.bpm;e.preventDefault();});window.addEventListener('mousemove',e=>{if(!sw)return;setBPM(sb+Math.round((sy-e.clientY)/CONFIG.metro.swipePxPerBpm));});window.addEventListener('mouseup',()=>{sw=false;});el.addEventListener('touchstart',e=>{sw=true;sy=e.touches[0].clientY;sb=S.bpm;},{passive:true});window.addEventListener('touchmove',e=>{if(!sw)return;setBPM(sb+Math.round((sy-e.touches[0].clientY)/CONFIG.metro.swipePxPerBpm));},{passive:true});window.addEventListener('touchend',()=>{sw=false;});}
 setupBpmSwipe('bpm-num');setupBpmSwipe('bpm-num-tm');
@@ -632,6 +705,10 @@ function drawClock(ctx,size,elapsedSec,active){
   ctx.beginPath();ctx.arc(cx,cy,4,0,Math.PI*2);ctx.fillStyle=active?C.accent:C.muted;ctx.fill();ctx.beginPath();ctx.arc(cx,cy,1.8,0,Math.PI*2);ctx.fillStyle=C.bg;ctx.fill();
 }
 
+let _rafId=null;
+function startRaf(){if(!_rafId){lastFrameMs=Date.now();_rafId=requestAnimationFrame(frame);}}
+function stopRaf(){if(_rafId){cancelAnimationFrame(_rafId);_rafId=null;}}
+
 function frame(){
   const now=Date.now(),dt=now-lastFrameMs;lastFrameMs=now;
   const d=new Date(now),ts=String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0')+':'+String(d.getSeconds()).padStart(2,'0');
@@ -649,12 +726,13 @@ function frame(){
     if(!A.isClick){A.analyserTD.getFloatTimeDomainData(A.tdBuf);const raw=yin(A.tdBuf,A.sampleRate);if(S.mode==='practice')updateTunerUI(raw,'tuner-note-big','tuner-cents','tuner-hz',S.histData,'tuner-history',S.tolCents);else updateTunerUI(raw,'tm-tuner-note','tm-cents','tm-hz',S.histDataTM,'tuner-history-tm',S.tolCentsTM);}
   }
   drawClock(ctxT,220,S.animMs/1000,S.strOK);
-  if(S.mode==='practice'&&S.timerOpen&&ctxP)drawClock(ctxP,clockPSize,S.animMs/1000,S.strOK);
-  requestAnimationFrame(frame);
+  const isTablet=window.matchMedia('(min-width:700px)').matches;
+  if(S.mode==='practice'&&(S.timerOpen||isTablet)&&ctxP)drawClock(ctxP,clockPSize,S.animMs/1000,S.strOK);
+  if(S.running)_rafId=requestAnimationFrame(frame);else _rafId=null;
 }
-window.addEventListener('resize',()=>{resizePCanvases();resizeTMCanvas();});
+window.addEventListener('resize',()=>{resizePCanvases();resizeTMCanvas();if(S.running&&S.mode==='practice')applyPSec(true);});
 setTimeout(()=>{resizePCanvases();resizeTMCanvas();},200);
-lastFrameMs=Date.now();requestAnimationFrame(frame);
+lastFrameMs=Date.now();
 </script>
 </body>
 </html>
