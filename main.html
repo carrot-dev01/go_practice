@@ -324,7 +324,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;heigh
       </div>
     </div>
     <!-- Tuner 카드 -->
-    <div class="scard" id="tuner-card" style="flex:2;min-height:180px;">
+    <div class="scard" id="tuner-card" style="flex:2;">
       <div class="sec-hdr open" id="tuner-hdr" onclick="togglePSec('tuner')">
         <span class="sh-title">Tuner</span><span class="sh-chev">▼</span>
       </div>
@@ -334,7 +334,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;heigh
             <div id="tuner-note-big">--</div>
             <div id="tuner-right-col"><span id="tuner-cents">-- ¢</span><span id="tuner-hz">-- Hz</span></div>
           </div>
-          <canvas id="tuner-history"></canvas>
+          <canvas id="tuner-history" style="min-height:120px;"></canvas>
           <div id="tol-row">
             <span id="tol-label">In-tune</span>
             <input type="range" id="tol-slider" min="3" max="25" value="10" step="1" oninput="setTol(+this.value)">
@@ -588,8 +588,7 @@ function fftDetect(){
 }
 async function runYamnet(){
   const Y=CONFIG.yamnet;if(!A.yamnet||A.yamnetRunning||A.pcmPos<Y.inputLen)return;A.yamnetRunning=true;
-  try{const s=new Float32Array(Y.inputLen),st=A.pcmPos-Y.inputLen;for(let i=0;i<Y.inputLen;i++)s[i]=A.pcm16k[(st+i)%A.pcm16k.length];const wf=tf.tensor1d(s),res=A.yamnet.predict(wf);const sc=Array.isArray(res)?res[0]:res;const arr=await sc.array(),flat=Array.isArray(arr[0])?arr[0]:arr;let mx=0;for(const idx of Y.stringIdx){if(flat[idx]>mx)mx=flat[idx];}S.yamnetOK=mx>=Y.threshold;wf.dispose();// 모든 출력 텐서 해제 (scores, embeddings, spectrogram)
-  if(Array.isArray(res))res.forEach(t=>t.dispose());else if(sc!==res)sc.dispose();}
+  try{const s=new Float32Array(Y.inputLen),st=A.pcmPos-Y.inputLen;for(let i=0;i<Y.inputLen;i++)s[i]=A.pcm16k[(st+i)%A.pcm16k.length];const wf=tf.tensor1d(s),res=A.yamnet.predict(wf);const sc=Array.isArray(res)?res[0]:res;const arr=await sc.array(),flat=Array.isArray(arr[0])?arr[0]:arr;let mx=0;for(const idx of Y.stringIdx){if(flat[idx]>mx)mx=flat[idx];}S.yamnetOK=mx>=Y.threshold;wf.dispose();if(Array.isArray(res))res.forEach(t=>t.dispose());else res.dispose();}
   catch(e){S.yamnetOK=true;}A.yamnetRunning=false;
 }
 function freqToName(f){if(!f)return'';const midi=Math.round(12*Math.log2(f/440))+69;return NOTES[((midi%12)+12)%12]+(Math.floor(midi/12)-1)+' · '+f+'Hz';}
