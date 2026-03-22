@@ -472,7 +472,7 @@ async function openMic(){
 function mainBtnClick(){if(!S.micReady)openMic();else goStart();}
 
 let sessionTimer=null,lastFrameMs=Date.now();
-let ctxT=null,ctxP=null,clockPSize=180;
+let ctxT=null,ctxP=null,clockPSize=150;
 
 function goStart(){
   Object.assign(S,{totalSec:0,streakSec:0,elapsedSec:0,animMs:0,goalDone:false,paused:false,holdFrames:0,strOK:false,yamnetOK:false,lastYamnetMs:0,smoothFreq:-1,lockedMidi:-1,lockCount:0,histData:new Array(CONFIG.tuner.histLen).fill(null),histDataTM:new Array(CONFIG.tuner.histLen).fill(null),tunerOpen:true,timerOpen:false});
@@ -587,9 +587,9 @@ function setupCanvas(el,size){if(!el)return null;const dpr=window.devicePixelRat
 function resizePCanvases(){
   const th=document.getElementById('tuner-history');
   if(th&&th.offsetParent!==null&&th.offsetWidth>0){const dpr=window.devicePixelRatio||1,w=th.offsetWidth,h=Math.max(60,th.offsetHeight||80);th.width=w*dpr;th.height=h*dpr;th.style.width=w+'px';th.style.height=h+'px';th.getContext('2d').scale(dpr,dpr);}
-  // Practice 타이머 시계 — 최대 180px
+  // Practice 타이머 시계 — 최대 150px
   const cp=document.getElementById('clk-p'),inner=document.getElementById('timer-sub-inner');
-  if(cp&&inner&&inner.offsetWidth>0){const size=Math.min(inner.offsetWidth,180);clockPSize=size;ctxP=setupCanvas(cp,size);}
+  if(cp&&inner&&inner.offsetWidth>0){const size=Math.min(inner.offsetWidth,150);clockPSize=size;ctxP=setupCanvas(cp,size);}
 }
 function resizeTMCanvas(){const th=document.getElementById('tuner-history-tm');if(!th||!th.offsetWidth)return;const dpr=window.devicePixelRatio||1,w=th.offsetWidth,h=th.offsetHeight||200;th.width=w*dpr;th.height=h*dpr;th.style.width=w+'px';th.style.height=h+'px';th.getContext('2d').scale(dpr,dpr);}
 
