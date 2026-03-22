@@ -131,7 +131,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;heigh
 .metro-start:hover:not(.on){border-color:var(--accent);color:var(--accent);}
 
 /* 비트 플래시 바 */
-#beat-flash{position:fixed;top:0;left:0;right:0;height:3px;background:var(--accent);opacity:0;pointer-events:none;z-index:100;transition:opacity .04s;}
+#beat-flash{position:fixed;top:0;left:0;right:0;height:3px;background:var(--accent);opacity:0;pointer-events:none;z-index:1000;transition:opacity .04s;}
 #beat-flash.lit{opacity:.85;}
 
 /* Play 화면 */
@@ -405,7 +405,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;heigh
           </div>
         </div>
         <div class="metro-vol-row">
-          <span class="metro-vol-lbl">Click</span>
+          <span class="metro-vol-lbl">🔊</span>
           <input type="range" id="metro-vol" min="0" max="1" step="0.05" value="0.6" oninput="setMetroVol(+this.value)">
         </div>
         <div class="metro-bottom">
@@ -502,7 +502,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;heigh
         </div>
       </div>
       <div class="metro-vol-row">
-        <span class="metro-vol-lbl">Click</span>
+        <span class="metro-vol-lbl">🔊</span>
         <input type="range" id="metro-vol-tm" min="0" max="1" step="0.05" value="0.6" oninput="setMetroVol(+this.value)">
       </div>
       <div class="metro-bottom">
