@@ -654,8 +654,22 @@ function fftDetect(){
 }
 async function runYamnet(){
   const Y=CONFIG.yamnet;if(!A.yamnet||A.yamnetRunning||A.pcmPos<Y.inputLen)return;A.yamnetRunning=true;
-  try{const s=new Float32Array(Y.inputLen),st=A.pcmPos-Y.inputLen;for(let i=0;i<Y.inputLen;i++)s[i]=A.pcm16k[(st+i)%A.pcm16k.length];const wf=tf.tensor1d(s),res=A.yamnet.predict(wf);const sc=Array.isArray(res)?res[0]:res;const arr=await sc.array(),flat=Array.isArray(arr[0])?arr[0]:arr;let mx=0;for(const idx of Y.stringIdx){if(flat[idx]>mx)mx=flat[idx];}S.yamnetOK=mx>=Y.threshold;wf.dispose();if(Array.isArray(res))res.forEach(t=>t.dispose());else res.dispose();}
-  catch(e){S.yamnetOK=true;}A.yamnetRunning=false;
+  let wf=null,res=null;
+  try{
+    const s=new Float32Array(Y.inputLen),st=A.pcmPos-Y.inputLen;
+    for(let i=0;i<Y.inputLen;i++)s[i]=A.pcm16k[(st+i)%A.pcm16k.length];
+    wf=tf.tensor1d(s);res=A.yamnet.predict(wf);
+    const sc=Array.isArray(res)?res[0]:res;
+    const arr=await sc.array(),flat=Array.isArray(arr[0])?arr[0]:arr;
+    let mx=0;for(const idx of Y.stringIdx){if(flat[idx]>mx)mx=flat[idx];}
+    S.yamnetOK=mx>=Y.threshold;
+  }catch(e){S.yamnetOK=true;}
+  finally{
+    // 예외 발생 여부와 무관하게 항상 해제
+    if(wf)wf.dispose();
+    if(res){if(Array.isArray(res))res.forEach(t=>t.dispose());else res.dispose();}
+    A.yamnetRunning=false;
+  }
 }
 function freqToName(f){if(!f)return'';const midi=Math.round(12*Math.log2(f/440))+69;return NOTES[((midi%12)+12)%12]+(Math.floor(midi/12)-1)+' · '+f+'Hz';}
 
