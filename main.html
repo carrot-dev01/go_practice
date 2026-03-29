@@ -518,7 +518,13 @@ let _micOpening=false;
 async function openMic(){
   if(_micOpening)return false;_micOpening=true;
   try{
-    A.micStream=await navigator.mediaDevices.getUserMedia({audio:true});
+    A.micStream=await navigator.mediaDevices.getUserMedia({audio:{
+    echoCancellation:false,
+    noiseSuppression:false,
+    autoGainControl:false,
+    channelCount:1,
+    sampleRate:44100,
+  }});
     A.micAC=new(window.AudioContext||window.webkitAudioContext)();A.sampleRate=A.micAC.sampleRate;
     A.analyserFFT=A.micAC.createAnalyser();A.analyserFFT.fftSize=CFG.detect.fftSize;A.analyserFFT.smoothingTimeConstant=CFG.detect.fftSmooth;A.binCount=A.analyserFFT.frequencyBinCount;A.fftBuf=new Float32Array(A.binCount);
     A.analyserTD=A.micAC.createAnalyser();A.analyserTD.fftSize=CFG.tuner.fftSize;A.analyserTD.smoothingTimeConstant=0;A.tdBuf=new Float32Array(CFG.tuner.fftSize);
@@ -526,7 +532,7 @@ async function openMic(){
     const ratio=A.sampleRate/CFG.yamnet.sampleRate;
     A.scriptProc.onaudioprocess=e=>{const inp=e.inputBuffer.getChannelData(0);for(let i=0;i<inp.length;i+=ratio){A.pcm16k[A.pcmPos%A.pcm16k.length]=inp[Math.floor(i)];A.pcmPos++;}};
     if(A.micAC.state==='suspended')await A.micAC.resume();
-    const src=A.micAC.createMediaStreamSource(A.micStream);src.connect(A.analyserFFT);src.connect(A.analyserTD);src.connect(A.scriptProc);A.scriptProc.connect(A.micAC.destination);
+    const src=A.micAC.createMediaStreamSource(A.micStream);src.connect(A.analyserFFT);src.connect(A.analyserTD);src.connect(A.scriptProc);
     S.micReady=true;S.running=true;
     requestWakeLock();updateMicUI();startRaf();
     _micOpening=false;return true;
@@ -801,15 +807,26 @@ function stopRefNote(){
 function tbRec(){if(!S.micReady){toast('마이크를 먼저 켜주세요');return;}if(A.recording)stopRec();else startRec();}
 function startRec(){
   if(!A.micStream)return;A.recChunks=[];A.recStartTime=Date.now();
-  A.recorder=new MediaRecorder(A.micStream);
+  // 기기 지원 최고 품질 코덱 순서대로 선택
+  const _mimes=[
+    'audio/webm;codecs=opus',  // Chrome Android 최고
+    'audio/mp4;codecs=mp4a.40.2', // iOS Safari
+    'audio/mp4',
+    'audio/webm',
+    '',
+  ];
+  const _mime=_mimes.find(m=>!m||MediaRecorder.isTypeSupported(m))||'';
+  const _recOpts={audioBitsPerSecond:256000}; // 256kbps - 악기 녹음 고음질
+  if(_mime)_recOpts.mimeType=_mime;
+  A.recorder=new MediaRecorder(A.micStream,_recOpts);
   A.recorder.ondataavailable=e=>{if(e.data.size>0)A.recChunks.push(e.data);};
   A.recorder.onstop=()=>{
-    const blob=new Blob(A.recChunks,{type:'audio/webm'});
+    const blob=new Blob(A.recChunks,{type:A.recorder.mimeType||'audio/webm'});
     const url=URL.createObjectURL(blob);
     const dur=Math.round((Date.now()-A.recStartTime)/1000);
     const n=new Date(A.recStartTime);
     const name=`${n.getFullYear()}${String(n.getMonth()+1).padStart(2,'0')}${String(n.getDate()).padStart(2,'0')}_${String(n.getHours()).padStart(2,'0')}${String(n.getMinutes()).padStart(2,'0')}`;
-    recItems.unshift({url,name,dur,blob});renderRecList();
+    recItems.unshift({url,name,dur,blob,mime:A.recorder.mimeType});renderRecList();
   };
   A.recorder.start();A.recording=true;
   document.getElementById('rec-ind').classList.add('show');
