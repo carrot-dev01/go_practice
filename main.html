@@ -843,12 +843,12 @@ function toggleMenu(){
   const isOpen=overlay.classList.toggle('open');
   // 메뉴 닫을 때 기준음 패널 상태 동기화
   if(!isOpen){
-    const refInline=document.getElementById('ref-inline');
-    if(refInline&&refInline.classList.contains('open')){
+    // 기준음을 실제로 누른 상태일 때만 외부 패널 표시
+    const hasActive=document.querySelector('.ref-note-btn.on');
+    if(hasActive){
       document.getElementById('ref-panel').classList.add('open');
     }
   } else {
-    // 메뉴 열 때 외부 패널 닫기
     document.getElementById('ref-panel').classList.remove('open');
   }
 }
