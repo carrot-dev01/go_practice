@@ -211,31 +211,36 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:22px;heigh
   #main-body{display:grid;grid-template-columns:1fr 1fr;gap:var(--gap);flex:1;min-height:0;width:100%;}
   #ref-panel{max-width:680px;}
 
-  /* 패드 메트로놈 — 넓은 레이아웃 */
+  /* 패드 메트로놈 — 세로 적층 레이아웃 */
   .bd.beat{width:17px;height:17px;}.bd.subdiv{width:9px;height:9px;}
   #beat-vis{gap:8px;height:24px;}
 
-  /* BPM + 재생버튼 한 줄 양옆 */
-  #metro-bpm-row{display:flex;align-items:center;justify-content:space-between;gap:0;}
-  #metro-bpm-wrap{flex:1;}
-  #metro-bpm{font-size:80px;text-align:left;}
+  /* 1행: BPM 왼쪽 + 재생 오른쪽 */
+  #metro-bpm-row{display:flex;align-items:center;justify-content:space-between;gap:12px;}
+  #metro-bpm-wrap{flex:1;cursor:ns-resize;}
+  #metro-bpm{font-size:84px;text-align:left;line-height:1;}
   #metro-bpm-hint{text-align:left;}
-  /* adj-col 세로 배치 */
-  #metro-adj-col{display:flex;flex-direction:column;gap:10px;flex:0 0 auto;align-items:flex-end;}
-  /* 재생버튼 크게 */
-  #metro-play-btn{width:72px;height:72px;font-size:32px;flex:0 0 auto;}
-  /* -/+ 가로 한 줄 */
-  #metro-btn-row{display:flex;gap:8px;}
-  .m-adj{width:52px;height:52px;flex:0 0 auto;font-size:26px;}
+  #metro-play-btn{width:76px;height:76px;font-size:34px;flex:0 0 auto;border-radius:14px;}
+  /* adj-col 숨김 — 재생버튼만 bpm-row에 남김 */
+  #metro-adj-col{display:none;}
+
+  /* 2행: -/+ 버튼 (별도 행) */
+  #metro-adj-pad{display:flex;gap:8px;}
+  .m-adj-pad{flex:1;height:52px;background:transparent;border:1.5px solid var(--border);border-radius:10px;color:var(--text);font-size:26px;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+
   /* 볼륨 */
-  #metro-vol-row{width:140px;}
+  #metro-vol-row{display:flex;align-items:center;gap:8px;}
+
   /* 박자: 2개씩 두 줄 */
   #ts-grid{display:grid;grid-template-columns:1fr 1fr;gap:5px;}
   #sd-grid{display:grid;grid-template-columns:1fr 1fr;gap:5px;}
-  .m-seg{padding:14px 0;font-size:16px;}
+  .m-seg{padding:16px 0;font-size:17px;}
+
+  /* 패드: 숨겨진 행들 표시 */
+  #metro-adj-pad{display:flex!important;}
+  #metro-vol-pad{display:flex!important;}
   /* 접기 버튼 패드에서 숨김 */
   #metro-collapse-btn{display:none!important;}
-  /* 패드에서 metro-body 항상 표시 */
   #metro-body{max-height:none!important;opacity:1!important;pointer-events:auto!important;}
 }
 </style>
@@ -312,17 +317,27 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:22px;heigh
             <div id="metro-bpm">80</div>
             <span id="metro-bpm-hint">↕ 드래그</span>
           </div>
+          <button id="metro-play-btn" onclick="toggleMetro()">▶</button>
           <div id="metro-adj-col">
             <div id="metro-btn-row">
               <button class="m-adj" onclick="adjBPM(-1)">−</button>
               <button class="m-adj" onclick="adjBPM(+1)">+</button>
-              <button id="metro-play-btn" onclick="toggleMetro()">▶</button>
             </div>
             <div id="metro-vol-row">
               <span class="m-vol-lbl">🔈</span>
               <input type="range" id="metro-vol" min="0" max="1" step="0.05" value="0.7" oninput="setMetroVol(+this.value)">
             </div>
           </div>
+        </div>
+        <!-- 패드 전용: -/+ 별도 행 -->
+        <div id="metro-adj-pad" style="display:none;">
+          <button class="m-adj-pad" onclick="adjBPM(-1)">−</button>
+          <button class="m-adj-pad" onclick="adjBPM(+1)">+</button>
+        </div>
+        <!-- 패드 전용: 볼륨 별도 행 -->
+        <div id="metro-vol-pad" style="display:none;align-items:center;gap:8px;">
+          <span class="m-vol-lbl">🔈</span>
+          <input type="range" id="metro-vol-pad-input" min="0" max="1" step="0.05" value="0.7" oninput="setMetroVol(+this.value);document.getElementById('metro-vol').value=this.value;">
         </div>
         <div class="m-grid" id="ts-grid">
           <button class="m-seg" data-ts="2" onclick="setTS(2)">2/4</button>
@@ -957,10 +972,9 @@ function openEditor(idx){
   });
 
   // UI 리셋
-  const title=document.getElementById('editor-title');
-  title.textContent=item.name;title.style.borderBottomColor='transparent';
+  document.getElementById('editor-title-display').textContent=item.name;
   document.getElementById('ed-cur').textContent='00:00';
-  document.getElementById('ed-dur').textContent='00:00';
+  document.getElementById('ed-dur').textContent='--:--';
   document.getElementById('ed-play-btn').textContent='▶';
   document.getElementById('ed-speed').value=1.0;
   document.getElementById('ed-speed-val').textContent='1.0×';
@@ -986,14 +1000,15 @@ function closeEditor(){
   document.getElementById('editor-page').style.display='none';
 }
 
-function edSaveTitle(){
-  const el=document.getElementById('editor-title');
-  const newName=el.textContent.trim();
-  if(newName&&_ed.idx>=0&&recItems[_ed.idx]){
-    recItems[_ed.idx].name=newName;
+function edEditTitle(){
+  const display=document.getElementById('editor-title-display');
+  const current=_ed.item?_ed.item.name:'';
+  const newName=prompt('파일 이름 수정', current);
+  if(newName&&newName.trim()&&_ed.idx>=0&&recItems[_ed.idx]){
+    recItems[_ed.idx].name=newName.trim();
+    display.textContent=newName.trim();
     renderRecList();
   }
-  el.style.borderBottomColor='transparent';
 }
 
 function edOnTimeUpdate(){
@@ -1217,14 +1232,16 @@ function edRenderBmList(){
   }
   _ed.bookmarks.forEach((t,i)=>{
     const pill=document.createElement('div');
-    pill.style.cssText='display:flex;align-items:center;gap:5px;padding:5px 10px;background:var(--surface);border:1.5px solid #f59e0b44;border-radius:8px;cursor:pointer;';
-    const lbl=document.createElement('span');
+    pill.style.cssText='display:flex;align-items:center;gap:0;background:var(--surface);border:1.5px solid #f59e0b66;border-radius:8px;overflow:hidden;cursor:pointer;';
+    // 시간 버튼 (탭 = 이동)
+    const lbl=document.createElement('button');
     lbl.textContent=fmtT(t);
-    lbl.style.cssText='font-family:\'DM Mono\',monospace;font-size:12px;color:#f59e0b;font-weight:700;';
+    lbl.style.cssText='background:none;border:none;padding:6px 10px;font-family:\'DM Mono\',monospace;font-size:12px;color:#f59e0b;font-weight:700;cursor:pointer;';
     lbl.onclick=()=>{if(_ed.audio)_ed.audio.currentTime=t;};
+    // 삭제 버튼
     const del=document.createElement('button');
     del.textContent='✕';
-    del.style.cssText='background:none;border:none;color:#888;font-size:11px;cursor:pointer;padding:0 0 0 2px;line-height:1;';
+    del.style.cssText='background:none;border:none;border-left:1px solid #f59e0b33;color:#888;font-size:11px;cursor:pointer;padding:6px 8px;line-height:1;';
     del.onclick=(e)=>{e.stopPropagation();_ed.bookmarks.splice(i,1);edRenderBmTicks();edRenderBmList();};
     pill.appendChild(lbl);pill.appendChild(del);
     wrap.appendChild(pill);
@@ -1364,20 +1381,21 @@ document.getElementById('metro-body').style.maxHeight='420px';
   <div style="display:flex;flex-direction:column;height:100%;max-width:480px;margin:0 auto;width:100%;box-sizing:border-box;">
 
     <!-- 헤더 -->
-    <div style="display:flex;align-items:center;gap:10px;padding:calc(env(safe-area-inset-top,0px)+14px) 20px 12px;flex-shrink:0;">
+    <div style="display:flex;align-items:center;gap:10px;padding:calc(env(safe-area-inset-top,0px)+16px) 20px 16px;flex-shrink:0;">
       <button onclick="closeEditor()" style="background:none;border:none;color:var(--text);font-size:24px;cursor:pointer;line-height:1;padding:0;flex-shrink:0;">←</button>
       <div style="flex:1;min-width:0;">
-        <div style="font-size:18px;font-weight:700;color:var(--text);letter-spacing:.04em;">편집</div>
-        <div id="editor-title" contenteditable="true" spellcheck="false"
-          style="font-family:'DM Mono',monospace;font-size:12px;color:var(--muted);margin-top:2px;outline:none;border-bottom:1px solid transparent;cursor:text;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"
-          onblur="edSaveTitle()" onkeydown="if(event.key==='Enter'){this.blur();}"></div>
+        <div style="font-size:19px;font-weight:700;color:var(--text);letter-spacing:.03em;margin-bottom:5px;">편집</div>
+        <div style="display:flex;align-items:center;gap:6px;">
+          <span id="editor-title-display" style="font-family:'DM Mono',monospace;font-size:12px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;"></span>
+          <button onclick="edEditTitle()" style="background:none;border:none;color:var(--dim);font-size:13px;cursor:pointer;flex-shrink:0;padding:0 2px;">✎</button>
+        </div>
       </div>
     </div>
 
     <!-- 시간 표시 -->
-    <div style="display:flex;justify-content:space-between;align-items:baseline;padding:0 22px 8px;flex-shrink:0;">
+    <div style="display:flex;justify-content:space-between;align-items:baseline;padding:0 22px 12px;flex-shrink:0;">
       <span id="ed-cur" style="font-family:'DM Mono',monospace;font-size:28px;color:var(--text);font-weight:500;letter-spacing:.02em;">00:00</span>
-      <span id="ed-dur" style="font-family:'DM Mono',monospace;font-size:16px;color:var(--muted);">00:00</span>
+      <span id="ed-dur" style="font-family:'DM Mono',monospace;font-size:16px;color:var(--muted);">--:--</span>
     </div>
 
     <!-- 슬라이더 영역 (메인 인터랙션) -->
