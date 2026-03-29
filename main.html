@@ -38,9 +38,9 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--text);fon
 
 /* ── 헤더 ── */
 #hdr{display:flex;align-items:center;justify-content:space-between;width:100%;max-width:360px;}
-#logo-block{display:flex;flex-direction:column;gap:2px;}
-#logo{font-family:'Cormorant Garamond',serif;font-style:italic;font-size:28px;color:var(--accent);line-height:1;letter-spacing:-.01em;font-weight:600;text-shadow:0 0 0 transparent;}
-#logo-sub{font-size:7.5px;color:var(--dim);letter-spacing:.11em;text-transform:uppercase;}
+#logo-block{display:flex;flex-direction:column;}
+#logo{font-family:'Cormorant Garamond',serif;font-style:italic;font-size:28px;color:var(--accent);line-height:1.15;letter-spacing:-.01em;font-weight:600;}
+#logo-sub{font-size:7.5px;color:var(--dim);letter-spacing:.11em;text-transform:uppercase;margin-top:3.5px;}
 #hdr-right{display:flex;align-items:center;gap:8px;}
 #ai-dot{width:6px;height:6px;border-radius:50%;background:var(--muted);flex-shrink:0;transition:background .4s;}
 #ai-dot.loading{background:var(--accdim);animation:pulse 1.2s infinite;}
@@ -57,8 +57,6 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--text);fon
 #menu-btn{padding:4px 8px;background:transparent;border:none;color:var(--muted);font-size:20px;cursor:pointer;line-height:1;}
 
 /* ── 감지 바 ── */
-#detect-bar{width:100%;max-width:360px;height:3px;background:var(--surface2);flex-shrink:0;overflow:hidden;border-radius:1px;}
-#detect-fill{height:100%;background:var(--green);transform:scaleX(0);transform-origin:left;transition:transform .25s;}
 
 /* ── 카드 ── */
 .card{width:100%;max-width:360px;background:var(--surface);border:.5px solid var(--border);border-radius:var(--r);overflow:hidden;}
@@ -92,11 +90,11 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--text);fon
 /* 기준음 A= 드럼 피커 */
 #ref-row{display:flex;align-items:center;gap:8px;flex-shrink:0;}
 #ref-lbl{font-size:10px;color:var(--muted);white-space:nowrap;letter-spacing:.06em;text-transform:uppercase;}
-#ref-drum-outer{position:relative;width:72px;height:56px;overflow:hidden;border-radius:8px;background:var(--surface2);cursor:ns-resize;user-select:none;touch-action:none;flex-shrink:0;border:.5px solid var(--border);}
-#ref-drum-outer::before,#ref-drum-outer::after{content:'';position:absolute;left:0;right:0;height:20px;z-index:2;pointer-events:none;}
+#ref-drum-outer{position:relative;width:72px;height:28px;overflow:hidden;border-radius:6px;background:var(--surface2);cursor:ns-resize;user-select:none;touch-action:none;flex-shrink:0;border:.5px solid var(--border);}
+#ref-drum-outer::before,#ref-drum-outer::after{content:'';position:absolute;left:0;right:0;height:9px;z-index:2;pointer-events:none;}
 #ref-drum-outer::before{top:0;background:linear-gradient(to bottom,var(--surface2) 20%,transparent);}
 #ref-drum-outer::after{bottom:0;background:linear-gradient(to top,var(--surface2) 20%,transparent);}
-#ref-drum-sel{position:absolute;left:4px;right:4px;top:50%;transform:translateY(-50%);height:28px;border-radius:6px;background:color-mix(in srgb,var(--accent) 12%,transparent);border:.5px solid var(--accent);pointer-events:none;z-index:1;}
+#ref-drum-sel{position:absolute;left:0;right:0;top:50%;transform:translateY(-50%);height:28px;border-top:.5px solid var(--accent);border-bottom:.5px solid var(--accent);pointer-events:none;z-index:1;}
 #ref-drum-inner{position:absolute;left:0;right:0;display:flex;flex-direction:column;align-items:center;will-change:transform;}
 .ref-drum-item{height:28px;width:100%;display:flex;align-items:center;justify-content:center;font-family:'DM Mono',monospace;font-size:12px;color:var(--muted);user-select:none;flex-shrink:0;}
 .ref-drum-item.active{color:var(--accent);font-size:13px;font-weight:500;}
@@ -131,7 +129,10 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--text);fon
 input[type=range]{flex:1;-webkit-appearance:none;appearance:none;height:3px;background:var(--border);border-radius:2px;outline:none;cursor:pointer;}
 input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;border-radius:50%;background:var(--accent);border:2px solid var(--bg);cursor:pointer;}
 
-/* ── 기준음 패널 ── */
+/* ── 기준음 인라인 패널 ── */
+#ref-inline{display:none;flex-direction:column;gap:8px;background:var(--surface2);border-radius:10px;padding:12px;}
+#ref-inline.open{display:flex;}
+/* ── 기준음 패널 (외부, 유지) ── */
 #ref-panel{position:fixed;bottom:0;left:0;right:0;max-width:360px;margin:0 auto;background:var(--surface);border-top:.5px solid var(--border);border-radius:14px 14px 0 0;padding:16px;z-index:40;transform:translateY(100%);transition:transform .25s cubic-bezier(.4,0,.2,1);}
 #ref-panel.open{transform:translateY(0);}
 .panel-hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;}
@@ -190,7 +191,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;heigh
 /* 태블릿 iPad Mini+ */
 @media(min-width:700px){
   #app{padding:.9rem 1rem;}
-  #app>.w,#hdr,#detect-bar,.card{max-width:680px;}
+  #app>.w,#hdr,#detect-bar{max-width:680px;}
   #main-body{display:grid;grid-template-columns:1fr 1fr;gap:var(--gap);flex:1;min-height:0;width:100%;max-width:680px;}
   #tuner-card,#metro-card{max-width:none;}
   /* 메트로놈 넓은 레이아웃 */
@@ -207,7 +208,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;heigh
 
 /* iPad Pro */
 @media(min-width:1000px){
-  #app>.w,#hdr,#detect-bar,.card,#main-body,#ref-panel{max-width:880px;}
+  #app>.w,#hdr,#detect-bar,#main-body,#ref-panel{max-width:880px;}
 }
 </style>
 </head>
@@ -218,7 +219,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;heigh
   <div id="mic-popup">
     <div id="mic-popup-title">마이크 접근 필요</div>
     <div id="mic-popup-desc">튜너와 현악기 감지를 위해<br>마이크를 켜주세요</div>
-    <button id="mic-popup-btn" onclick="allowMic()" style="opacity:.5;">잠시만요...</button>
+    <button id="mic-popup-btn" onclick="allowMic()">마이크 켜기</button>
     <button id="mic-popup-cancel" onclick="closeMicPopup()">나중에</button>
   </div>
 </div>
@@ -238,7 +239,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;heigh
         <span id="ai-txt">AI loading</span>
       </div>
       <div id="mic-dot"></div>
-      <span id="mic-txt">off</span>
+      <span id="mic-txt">Mic off</span>
       <div id="rec-ind">
         <div id="rec-dot-h"></div>
         <span id="rec-txt-h">REC</span>
@@ -247,8 +248,6 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;heigh
     </div>
   </div>
 
-  <!-- 감지 바 -->
-  <div id="detect-bar"><div id="detect-fill"></div></div>
 
   <!-- 메인 바디 -->
   <div id="main-body" style="display:flex;flex-direction:column;gap:var(--gap);width:100%;max-width:360px;flex:1;min-height:0;">
@@ -331,7 +330,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;heigh
 <div id="ref-panel">
   <div class="panel-hdr">
     <span class="panel-title">기준음 재생</span>
-    <button class="panel-close" onclick="toggleRefPanel()">✕</button>
+    <button class="panel-close" onclick="closeRefAll();">✕</button>
   </div>
   <div class="ref-oct-row">
     <span style="font-size:10px;color:var(--muted);">옥타브</span>
@@ -369,11 +368,11 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;heigh
     <div class="menu-sec">
       <div style="display:flex;align-items:center;justify-content:space-between;padding-bottom:6px;border-bottom:.5px solid var(--border);">
         <span class="menu-sec-title" style="border:none;padding:0;">타이머</span>
-        <span id="timer-help" style="font-size:11px;color:var(--dim);cursor:pointer;padding:0 4px;" onclick="toggleTimerTooltip()">?</span>
+        <span id="timer-help" style="font-size:10px;color:var(--dim);cursor:pointer;padding:0 4px;letter-spacing:.02em;" onclick="toggleTimerTooltip()">?</span>
       </div>
       <div id="timer-tooltip" style="font-size:11px;color:var(--muted);line-height:1.6;display:none;padding:6px 0;">연주 시간 = AI가 현악기를 감지한 실제 시간<br>전체 시간 = 타이머 시작 후 경과 시간</div>
       <div class="timer-grid">
-        <div class="timer-box"><div class="timer-lbl">전체 시간</div><div class="timer-val" id="timer-elapsed">00:00</div></div>
+        <div class="timer-box"><div class="timer-lbl">연습 시간</div><div class="timer-val" id="timer-elapsed">00:00</div></div>
         <div class="timer-box"><div class="timer-lbl">연주 시간</div><div class="timer-val" id="timer-detected">00:00</div></div>
       </div>
       <div style="display:flex;gap:6px;">
@@ -389,17 +388,34 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;heigh
       <div id="rec-list"></div>
     </div>
 
-    <!-- 기능 -->
+    <!-- 기준음 -->
     <div class="menu-sec">
-      <div class="menu-sec-title">기능</div>
-      <button class="menu-action" onclick="toggleRefPanel();toggleMenu();">기준음 재생</button>
-    </div>
-
-    <!-- 상태 -->
-    <div class="menu-sec">
-      <div class="menu-sec-title">상태</div>
-      <div class="menu-row"><span class="menu-item">AI 현악기 감지</span><span class="menu-val" id="ai-status">로딩중</span></div>
-      <div class="menu-row"><span class="menu-item">화면 항상 켜짐</span><span class="menu-val" id="wakelock-status">꺼짐</span></div>
+      <div class="menu-sec-title">기준음</div>
+      <div id="ref-inline" class="open">
+        <div class="ref-oct-row" style="margin-bottom:0;">
+          <span style="font-size:10px;color:var(--muted);">옥타브</span>
+          <button class="ref-oct-btn" onclick="adjRefOct(-1)">−</button>
+          <span id="ref-oct-num">4</span>
+          <button class="ref-oct-btn" onclick="adjRefOct(1)">+</button>
+        </div>
+        <div class="m-grid">
+          <button class="m-seg" onclick="playRef('도')">도</button>
+          <button class="m-seg" onclick="playRef('레')">레</button>
+          <button class="m-seg" onclick="playRef('미')">미</button>
+          <button class="m-seg" onclick="playRef('파')">파</button>
+          <button class="m-seg" onclick="playRef('솔')">솔</button>
+          <button class="m-seg" onclick="playRef('라')">라</button>
+          <button class="m-seg" onclick="playRef('시')">시</button>
+        </div>
+        <div class="m-grid">
+          <button class="m-seg" onclick="playRef('도♯')">도♯</button>
+          <button class="m-seg" onclick="playRef('레♯')">레♯</button>
+          <button class="m-seg" onclick="playRef('파♯')">파♯</button>
+          <button class="m-seg" onclick="playRef('솔♯')">솔♯</button>
+          <button class="m-seg" onclick="playRef('라♯')">라♯</button>
+        </div>
+        <button onclick="stopRefNote()" style="padding:7px;background:transparent;border:.5px solid var(--border);border-radius:8px;color:var(--muted);font-family:'Noto Sans KR',sans-serif;font-size:11px;cursor:pointer;text-align:center;width:100%;">소리 끄기</button>
+      </div>
     </div>
 
     <!-- 마이크 (맨 아래, 작게) -->
@@ -461,24 +477,20 @@ window.matchMedia('(prefers-color-scheme:dark)').addEventListener('change',()=>{
 
 // ── AI 로딩 ──
 async function loadYamnet(){
-  showMicPopup(); // 앱 시작하자마자 팝업 표시
   try{
     let w=0;while(typeof tf==='undefined'&&w<10000){await new Promise(r=>setTimeout(r,200));w+=200;}
     A.yamnet=await tf.loadGraphModel('https://tfhub.dev/google/tfjs-model/yamnet/tfjs/1',{fromTFHub:true});
     A.yamnetReady=true;
     document.getElementById('ai-dot').className='ready';
     document.getElementById('ai-txt').textContent='AI ready';
-    document.getElementById('ai-status').textContent='활성';
+    const _as=document.getElementById('ai-status');if(_as)_as.textContent='활성';
   }catch(e){
     document.getElementById('ai-dot').className='error';
     document.getElementById('ai-txt').textContent='basic mode';
     A.yamnetReady=true;
-    document.getElementById('ai-status').textContent='기본모드';
+    const _as2=document.getElementById('ai-status');if(_as2)_as2.textContent='기본모드';
   }
-  // AI 준비 완료 — 버튼 활성화
-  document.getElementById('mic-popup-btn').disabled=false;
-  document.getElementById('mic-popup-btn').textContent='마이크 켜기';
-  document.getElementById('mic-popup-btn').style.opacity='1';
+
 }
 loadYamnet();
 
@@ -528,7 +540,7 @@ function closeMic(){
   stopRaf();stopSessionTimer();updateMicUI();setDetectFill(false);
   document.getElementById('tuner-note').textContent='--';document.getElementById('tuner-note').className='';
   document.getElementById('tuner-oct').textContent='';document.getElementById('tuner-cents').textContent='-- ¢';document.getElementById('tuner-hz').textContent='-- Hz';
-  document.getElementById('wakelock-status').textContent='꺼짐';
+  const _ws2=document.getElementById('wakelock-status');if(_ws2)_ws2.textContent='꺼짐';
   stopSessionTimer();
   drawGauge(null);
 }
@@ -538,9 +550,10 @@ function toggleMicFromMenu(){
   updateMicMenuBtn();
 }
 function updateMicUI(){
-  const dot=document.getElementById('mic-dot'),txt=document.getElementById('mic-txt');
-  if(S.micReady){dot.classList.add('on');txt.textContent='on';}
-  else{dot.classList.remove('on');txt.textContent='off';}
+  const dot=document.getElementById('mic-dot');
+  const txt=document.getElementById('mic-txt');
+  if(S.micReady){dot.classList.add('on');if(txt)txt.textContent='Mic on';}
+  else{dot.classList.remove('on');if(txt)txt.textContent='Mic off';}
   updateMicMenuBtn();
 }
 function updateMicMenuBtn(){
@@ -549,7 +562,7 @@ function updateMicMenuBtn(){
   else{btn.textContent='마이크 켜기';btn.classList.remove('on');}
 }
 async function requestWakeLock(){
-  try{A.wakeLock=await navigator.wakeLock?.request('screen');document.getElementById('wakelock-status').textContent='켜짐';}catch(e){}
+  try{A.wakeLock=await navigator.wakeLock?.request('screen');const _ws=document.getElementById('wakelock-status');if(_ws)_ws.textContent='켜짐';}catch(e){}
 }
 document.addEventListener('visibilitychange',async()=>{if(S.running&&document.visibilityState==='visible'){A.micAC?.resume();try{A.wakeLock=await navigator.wakeLock?.request('screen');}catch(e){}}});
 
@@ -560,6 +573,7 @@ function stopSessionTimer(){clearInterval(_sessInt);S.timerRunning=false;const t
 function toggleTimer(){
   const btn=document.getElementById('timer-toggle-btn');
   if(!S.running){toast('마이크를 먼저 켜주세요');return;}
+  if(!A.yamnetReady){toast('AI 로딩 중입니다');return;}
   S.timerRunning=!S.timerRunning;
   if(S.timerRunning){
     clearInterval(_sessInt);
@@ -578,7 +592,7 @@ function toggleTimer(){
 }
 function resetTimer(){S.elapsedSec=0;S.detectedSec=0;document.getElementById('timer-elapsed').textContent='00:00';document.getElementById('timer-detected').textContent='00:00';}
 function fmt(s){return String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0');}
-function setDetectFill(on){document.getElementById('detect-fill').style.transform=on?'scaleX(1)':'scaleX(0)';}
+function setDetectFill(on){const el=document.getElementById('detect-fill');if(el)el.style.transform=on?'scaleX(1)':'scaleX(0)';}
 
 // ── A= 드럼 피커 ──
 const REF_IH=28,REF_MIN=CFG.refMin,REF_MAX=CFG.refMax;
@@ -749,6 +763,17 @@ function flashBeat(tick){const card=document.getElementById('metro-card');card.c
 
 // ── 기준음 패널 ──
 function toggleRefPanel(){document.getElementById('ref-panel').classList.toggle('open');}
+function closeRefAll(){
+  document.getElementById('ref-panel').classList.remove('open');
+  stopRefNote();
+}
+function toggleRefInline(){
+  const el=document.getElementById('ref-inline');
+  const btn=document.getElementById('ref-toggle-btn');
+  const isOpen=el.classList.toggle('open');
+  btn.textContent=isOpen?'닫기':'열기';
+  if(!isOpen)stopRefNote();
+}
 function adjRefOct(d){A.refOctave=Math.max(2,Math.min(6,A.refOctave+d));document.getElementById('ref-oct-num').textContent=A.refOctave;}
 function playRef(name){
   stopRefNote();if(!A.micAC)return;
@@ -809,7 +834,20 @@ function playRec(idx){if(_recAudio){_recAudio.pause();_recAudio=null;}const a=ne
 function deleteRec(idx){URL.revokeObjectURL(recItems[idx].url);recItems.splice(idx,1);renderRecList();}
 
 // ── 메뉴 ──
-function toggleMenu(){document.getElementById('menu-overlay').classList.toggle('open');}
+function toggleMenu(){
+  const overlay=document.getElementById('menu-overlay');
+  const isOpen=overlay.classList.toggle('open');
+  // 메뉴 닫을 때 기준음 패널 상태 동기화
+  if(!isOpen){
+    const refInline=document.getElementById('ref-inline');
+    if(refInline&&refInline.classList.contains('open')){
+      document.getElementById('ref-panel').classList.add('open');
+    }
+  } else {
+    // 메뉴 열 때 외부 패널 닫기
+    document.getElementById('ref-panel').classList.remove('open');
+  }
+}
 function menuBgClick(e){if(e.target===document.getElementById('menu-overlay'))toggleMenu();}
 
 // ── rAF ──
