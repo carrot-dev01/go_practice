@@ -24,7 +24,7 @@
 html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--text);font-family:'Noto Sans KR',sans-serif;font-weight:400;}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.25}}
 @keyframes recpulse{0%,100%{opacity:1}50%{opacity:.4}}
-@keyframes metroflash{0%{background:rgba(229,48,48,.32);border-color:var(--red)}60%{background:rgba(229,48,48,.15);border-color:var(--red)}100%{background:transparent;border-color:var(--border)}}
+@keyframes metroflash{0%{background:rgba(229,48,48,.32);border-color:var(--red)}60%{background:rgba(229,48,48,.12);border-color:var(--red)}100%{background:transparent;border-color:var(--border)}}
 
 /* ── 팝업 ── */
 #mic-popup-bg{position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:90;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .2s;}
@@ -107,7 +107,7 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--text);fon
    메트로놈
 ══════════════════════════════════ */
 #metro-card{background:var(--surface);border-radius:var(--r);border:2.5px solid var(--border);overflow:hidden;transition:border-color .06s,box-shadow .06s,background .1s;}
-#metro-card.flash-strong{animation:metroflash .5s ease-out forwards;}
+#metro-card.flash-strong{animation:metroflash .22s ease-out forwards;}
 #metro-card.lit-weak{border-color:rgba(204,0,0,.45)!important;}
 
 #metro-hdr{display:grid;grid-template-columns:auto 1fr auto;align-items:center;padding:10px 14px;border-bottom:2px solid var(--border);gap:10px;}
@@ -122,7 +122,7 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--text);fon
 #metro-play-hdr-btn{width:44px;height:36px;background:var(--red);border:none;border-radius:8px;color:#fff;font-size:20px;cursor:pointer;display:none;align-items:center;justify-content:center;}
 #metro-collapse-btn{width:34px;height:34px;background:transparent;border:1.5px solid var(--border);border-radius:8px;color:var(--muted);font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;}
 
-#metro-body{padding:13px 15px;display:flex;flex-direction:column;gap:10px;overflow:hidden;transition:max-height .28s ease,padding .28s ease,opacity .2s;}
+#metro-body{padding:13px 15px;display:flex;flex-direction:column;gap:14px;overflow:hidden;transition:max-height .28s ease,padding .28s ease,opacity .2s;}
 #metro-body.collapsed{max-height:0!important;padding-top:0;padding-bottom:0;opacity:0;pointer-events:none;}
 
 #metro-bpm-row{display:flex;align-items:center;gap:10px;}
@@ -237,6 +237,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:22px;heigh
   #metro-vol-pad{display:flex!important;}
 
   /* 행4: 박자(왼) + 리듬(오) 2컬럼 나란히 */
+#metro-grids-wrap{display:flex;flex-direction:column;gap:8px;}
   #metro-grids-wrap{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
   #ts-grid,#sd-grid{display:flex;flex-direction:column;gap:5px;}
   .m-seg{padding:16px 0;font-size:17px;}
@@ -422,7 +423,6 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:22px;heigh
           <span id="ref-oct-num-menu">4</span>
           <button class="ref-oct-btn" onclick="adjRefOct(1)">+</button>
         </div>
-        <button onclick="stopRefNoteBtn()" style="padding:9px 16px;background:transparent;border:1.5px solid var(--border);border-radius:9px;color:var(--muted);font-family:'Noto Sans KR',sans-serif;font-size:14px;cursor:pointer;font-weight:700;white-space:nowrap;flex:1;">소리 끄기</button>
       </div>
       <div class="ref-note-grid" style="margin-bottom:7px;">
         <button class="m-seg ref-note-btn" data-note="도" onclick="playRef('도')">도</button>
@@ -875,8 +875,17 @@ function flashBeat(tick){
 // ── 기준음 ──
 function closeRefAll(){document.getElementById('ref-panel').classList.remove('open');stopRefNote();}
 function adjRefOct(d){A.refOctave=Math.max(2,Math.min(6,A.refOctave+d));document.querySelectorAll('#ref-oct-num-ext,#ref-oct-num-menu').forEach(el=>{if(el)el.textContent=A.refOctave;});}
-function playRefHigh(){stopRefNote();if(!A.micAC)return;const midi=0+(A.refOctave+2)*12,freq=S.refHz*Math.pow(2,(midi-69)/12);A.refOsc=A.micAC.createOscillator();A.refGain=A.micAC.createGain();A.refOsc.type='triangle';A.refOsc.frequency.value=freq;A.refOsc.connect(A.refGain);A.refGain.connect(A.micAC.destination);A.refGain.gain.setValueAtTime(.22,A.micAC.currentTime);A.refOsc.start();document.querySelectorAll('.ref-note-btn').forEach(b=>b.classList.remove('on'));document.querySelectorAll('.ref-note-btn[data-note="도2"]').forEach(b=>b.classList.add('on'));}
-function playRef(name){stopRefNote();if(!A.micAC)return;const semi=KR_MIDI[name];if(semi===undefined)return;document.querySelectorAll('.ref-note-btn').forEach(b=>b.classList.remove('on'));document.querySelectorAll('.ref-note-btn[data-note="'+name+'"]').forEach(b=>b.classList.add('on'));const midi=semi+(A.refOctave+1)*12,freq=S.refHz*Math.pow(2,(midi-69)/12);A.refOsc=A.micAC.createOscillator();A.refGain=A.micAC.createGain();A.refOsc.type='triangle';A.refOsc.frequency.value=freq;A.refOsc.connect(A.refGain);A.refGain.connect(A.micAC.destination);A.refGain.gain.setValueAtTime(.22,A.micAC.currentTime);A.refOsc.start();}
+function playRefHigh(){
+  const alreadyOn=document.querySelector('.ref-note-btn[data-note="도2"].on');
+  if(alreadyOn){stopRefNote();return;}
+  stopRefNote();if(!A.micAC)return;const midi=0+(A.refOctave+2)*12,freq=S.refHz*Math.pow(2,(midi-69)/12);A.refOsc=A.micAC.createOscillator();A.refGain=A.micAC.createGain();A.refOsc.type='triangle';A.refOsc.frequency.value=freq;A.refOsc.connect(A.refGain);A.refGain.connect(A.micAC.destination);A.refGain.gain.setValueAtTime(.22,A.micAC.currentTime);A.refOsc.start();document.querySelectorAll('.ref-note-btn').forEach(b=>b.classList.remove('on'));document.querySelectorAll('.ref-note-btn[data-note="도2"]').forEach(b=>b.classList.add('on'));
+}
+function playRef(name){
+  // 이미 재생 중인 음이면 끄기 (토글)
+  const alreadyOn=document.querySelector('.ref-note-btn[data-note="'+name+'"].on');
+  if(alreadyOn){stopRefNote();return;}
+  stopRefNote();if(!A.micAC)return;const semi=KR_MIDI[name];if(semi===undefined)return;document.querySelectorAll('.ref-note-btn').forEach(b=>b.classList.remove('on'));document.querySelectorAll('.ref-note-btn[data-note="'+name+'"]').forEach(b=>b.classList.add('on'));const midi=semi+(A.refOctave+1)*12,freq=S.refHz*Math.pow(2,(midi-69)/12);A.refOsc=A.micAC.createOscillator();A.refGain=A.micAC.createGain();A.refOsc.type='triangle';A.refOsc.frequency.value=freq;A.refOsc.connect(A.refGain);A.refGain.connect(A.micAC.destination);A.refGain.gain.setValueAtTime(.22,A.micAC.currentTime);A.refOsc.start();
+}
 function stopRefNoteBtn(){stopRefNote();}
 function stopRefNote(){document.querySelectorAll('.ref-note-btn').forEach(b=>b.classList.remove('on'));if(A.refOsc&&A.refGain&&A.micAC){try{A.refGain.gain.cancelScheduledValues(A.micAC.currentTime);A.refGain.gain.setValueAtTime(A.refGain.gain.value,A.micAC.currentTime);A.refGain.gain.exponentialRampToValueAtTime(.001,A.micAC.currentTime+.05);A.refOsc.stop(A.micAC.currentTime+.05);}catch(e){}A.refOsc=null;A.refGain=null;}}
 
