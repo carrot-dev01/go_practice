@@ -3,6 +3,10 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Go practice">
+<meta name="mobile-web-app-capable" content="yes">
 <title>Go practice</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Noto+Sans+KR:wght@300;400;500;700;900&family=Cormorant+Garamond:ital,wght@1,600&display=swap" rel="stylesheet">
 <style>
@@ -16,11 +20,11 @@
   --bg:#0f0f0f;--surface:#1c1c1c;--surface2:#282828;--border:#383838;
   --text:#f0f0f0;--muted:#888888;--dim:#555555;
 }}
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
 html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--text);font-family:'Noto Sans KR',sans-serif;font-weight:400;}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.25}}
 @keyframes recpulse{0%,100%{opacity:1}50%{opacity:.4}}
-@keyframes metroflash{0%{background:rgba(229,48,48,.18)}100%{background:transparent}}
+@keyframes metroflash{0%{background:rgba(229,48,48,.32)}60%{background:rgba(229,48,48,.15)}100%{background:transparent}}
 
 /* ── 팝업 ── */
 #mic-popup-bg{position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:90;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .2s;}
@@ -39,7 +43,7 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--text);fon
 #logo{font-family:'Cormorant Garamond',serif;font-style:italic;font-size:28px;color:var(--text);line-height:1;font-weight:600;letter-spacing:-.01em;}
 #logo-sub{font-size:8px;color:var(--dim);letter-spacing:.12em;text-transform:uppercase;margin-top:2px;}
 #hdr-right{display:flex;align-items:center;gap:10px;}
-#hdr-rec-time{font-family:'DM Mono',monospace;font-size:14px;color:var(--red);font-weight:500;display:none;letter-spacing:.04em;}
+#hdr-rec-time{font-family:'DM Mono',monospace;font-size:14px;color:var(--text);font-weight:500;display:none;letter-spacing:.04em;}
 #hdr-rec-time.show{display:block;}
 #rec-hdr-btn{padding:6px 12px;background:transparent;border:1.5px solid var(--border);border-radius:8px;color:var(--muted);font-size:12px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:5px;letter-spacing:.06em;}
 #rec-hdr-btn.rec-on{border-color:var(--red);color:var(--red);animation:recpulse 1s infinite;}
@@ -73,7 +77,7 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--text);fon
 #tuner-note-row{display:flex;align-items:center;justify-content:center;min-height:104px;position:relative;}
 #tuner-note-left{display:flex;align-items:baseline;gap:4px;justify-content:center;}
 #tuner-note{font-family:'DM Mono',monospace;font-size:104px;font-weight:500;line-height:1;letter-spacing:-.02em;color:#ffffff;text-align:center;transition:color .08s;}
-#tuner-note.tune{color:#22c55e;text-shadow:0 0 28px rgba(34,197,94,.9),0 0 56px rgba(34,197,94,.5);}
+#tuner-note.tune{color:#22c55e;text-shadow:0 0 20px rgba(34,197,94,1),0 0 40px rgba(34,197,94,.7),0 0 80px rgba(34,197,94,.4);}
 #tuner-note.empty{color:#2a2a2a;font-size:64px;letter-spacing:.05em;}
 #tuner-oct{font-family:'DM Mono',monospace;font-size:28px;color:#888;align-self:flex-start;margin-top:16px;}
 /* 이명동음 - absolute로 분리해서 정렬 영향 안 받게 */
@@ -97,12 +101,13 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--text);fon
 /* ══════════════════════════════════
    메트로놈
 ══════════════════════════════════ */
-#metro-card{background:var(--surface);border-radius:var(--r);border:1.5px solid var(--border);overflow:hidden;transition:border-color .06s,box-shadow .06s,background .1s;}
-#metro-card.flash-strong{animation:metroflash .16s ease-out forwards;}
-#metro-card.lit-weak{border-color:#cc000066!important;}
+#metro-card{background:var(--surface);border-radius:var(--r);border:2.5px solid var(--border);overflow:hidden;transition:border-color .06s,box-shadow .06s,background .1s;}
+#metro-card.flash-strong{animation:metroflash .5s ease-out forwards;}
+#metro-card.lit-weak{border-color:rgba(204,0,0,.45)!important;}
 
-#metro-hdr{display:grid;grid-template-columns:auto 1fr auto;align-items:center;padding:10px 14px;border-bottom:1.5px solid var(--border);gap:10px;}
-#metro-hdr-label{font-family:'DM Mono',monospace;font-size:16px;color:var(--text);font-weight:700;white-space:nowrap;}
+#metro-hdr{display:grid;grid-template-columns:auto 1fr auto;align-items:center;padding:10px 14px;border-bottom:2px solid var(--border);gap:10px;}
+#metro-hdr-label{font-family:'DM Mono',monospace;font-size:20px;color:var(--text);font-weight:700;white-space:nowrap;cursor:pointer;padding-right:10px;}
+#metro-hdr-tap-zone{position:absolute;left:0;top:0;width:33%;height:100%;}
 #beat-vis{display:flex;align-items:center;justify-content:center;gap:7px;height:22px;}
 .bd{border-radius:50%;background:var(--border);transition:background .04s,transform .04s,box-shadow .04s;flex-shrink:0;}
 .bd.beat{width:15px;height:15px;}.bd.subdiv{width:8px;height:8px;}
@@ -173,7 +178,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:22px;heigh
 .rec-item-btn{flex:1;padding:9px;background:transparent;border:1.5px solid var(--border);border-radius:8px;color:var(--muted);font-size:17px;cursor:pointer;text-align:center;text-decoration:none;display:flex;align-items:center;justify-content:center;}
 .rec-play-btn{width:44px;height:44px;background:transparent;border:none;color:var(--text);font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
 .rec-seek{flex:1;height:4px;-webkit-appearance:none;appearance:none;background:var(--border);border-radius:2px;outline:none;cursor:pointer;}
-.rec-seek::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;border-radius:50%;background:var(--red);border:2px solid var(--bg);cursor:pointer;}
+.rec-seek::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;border-radius:50%;background:#111;border:2px solid var(--bg);cursor:pointer;}
 .rec-time{font-family:'DM Mono',monospace;font-size:12px;color:var(--muted);white-space:nowrap;min-width:38px;text-align:right;}
 .rec-player{display:flex;flex-direction:column;gap:7px;}
 .rec-player-top{display:flex;align-items:center;gap:8px;}
@@ -270,13 +275,14 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:22px;heigh
 
     <!-- 메트로놈 -->
     <div id="metro-card">
-      <div id="metro-hdr">
+      <div id="metro-hdr" style="position:relative;">
         <span id="metro-hdr-label">♩ 80</span>
         <div id="beat-vis"></div>
         <div id="metro-hdr-right">
           <button id="metro-play-hdr-btn" onclick="toggleMetro()">■</button>
           <button id="metro-collapse-btn" onclick="toggleMetroCollapse()">▼</button>
         </div>
+        <div id="metro-hdr-tap-zone"></div>
       </div>
       <div id="metro-body">
         <div id="metro-bpm-row">
@@ -454,13 +460,23 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:22px;heigh
       </div>
     </div>
 
-    <!-- 저전력 모드 -->
+    <!-- 화면 항상 켜짐 -->
     <div class="setting-row">
-      <span class="setting-lbl">저전력 모드</span>
-      <span class="setting-desc">꺼짐: 화면 항상 켜짐 + AI 감지 / 켜짐: 화면 자동 꺼짐 + FFT만 사용</span>
-      <div class="step-row" id="power-steps">
-        <button class="step-btn on" data-v="0" onclick="setPowerMode(0)">꺼짐</button>
-        <button class="step-btn" data-v="1" onclick="setPowerMode(1)">켜짐</button>
+      <span class="setting-lbl">화면 항상 켜짐</span>
+      <span class="setting-desc">켜짐: 연습 중 화면이 꺼지지 않음</span>
+      <div class="step-row" id="wakelock-steps">
+        <button class="step-btn on" data-v="1" onclick="setWakeLock(1)">켜짐</button>
+        <button class="step-btn" data-v="0" onclick="setWakeLock(0)">꺼짐</button>
+      </div>
+    </div>
+
+    <!-- AI 감지 -->
+    <div class="setting-row">
+      <span class="setting-lbl">AI 감지</span>
+      <span class="setting-desc">켜짐: YAMNet으로 현악기 감지 / 꺼짐: FFT만 사용 (배터리 절약)</span>
+      <div class="step-row" id="aimode-steps">
+        <button class="step-btn on" data-v="1" onclick="setAiMode(1)">켜짐</button>
+        <button class="step-btn" data-v="0" onclick="setAiMode(0)">꺼짐</button>
       </div>
     </div>
 
@@ -468,6 +484,12 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:22px;heigh
 </div>
 
 <div id="toast"></div>
+
+<!-- iOS 홈화면 추가 안내 (한 번만) -->
+<div id="pwa-banner" style="position:fixed;bottom:0;left:0;right:0;background:#111;color:#fff;font-size:13px;padding:12px 18px 12px;z-index:300;display:flex;align-items:center;justify-content:space-between;gap:12px;padding-bottom:max(12px,env(safe-area-inset-bottom));display:none;">
+  <span>↑ 공유 → <b>홈 화면에 추가</b>하면 전체화면으로 사용할 수 있어요</span>
+  <button onclick="dismissPwaBanner()" style="background:transparent;border:1px solid #666;border-radius:6px;color:#aaa;padding:4px 10px;font-size:12px;cursor:pointer;flex-shrink:0;">닫기</button>
+</div>
 
 <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.20.0/dist/tf.min.js"></script>
 <script>
@@ -490,6 +512,8 @@ const A={micStream:null,micAC:null,analyserFFT:null,analyserTD:null,fftBuf:null,
 const recItems=[];
 let _metroCollapsed=false;
 let _timerCollapsed=true;
+let _wakeLockEnabled=true;
+let _aiModeEnabled=true;
 
 async function loadYamnet(){try{let w=0;while(typeof tf==='undefined'&&w<10000){await new Promise(r=>setTimeout(r,200));w+=200;}A.yamnet=await tf.loadGraphModel('https://tfhub.dev/google/tfjs-model/yamnet/tfjs/1',{fromTFHub:true});A.yamnetReady=true;}catch(e){A.yamnetReady=true;}}
 loadYamnet();showMicPopup();
@@ -498,16 +522,19 @@ loadYamnet();showMicPopup();
 function setCentsStep(v){
   CFG.tuner.tolCents=v;
   document.querySelectorAll('#cents-steps .step-btn').forEach(b=>b.classList.toggle('on',+b.dataset.v===v));
+  saveSettings();
 }
 const RMS_LEVELS=[.010,.005,.002];
 function setRmsStep(v){
   CFG.tuner.rmsMin=RMS_LEVELS[v-1];
   document.querySelectorAll('#rms-steps .step-btn').forEach(b=>b.classList.toggle('on',+b.dataset.v===v));
+  saveSettings();
 }
 const SMOOTH_LEVELS=[.08,.18,.35];
 function setSmoothStep(v){
   CFG.tuner.smoothing=SMOOTH_LEVELS[v-1];
   document.querySelectorAll('#smooth-steps .step-btn').forEach(b=>b.classList.toggle('on',+b.dataset.v===v));
+  saveSettings();
 }
 function openSettings(){document.getElementById('settings-page').classList.add('open');}
 function closeSettings(){document.getElementById('settings-page').classList.remove('open');}
@@ -554,8 +581,8 @@ function closeMic(){
   ['tuner-oct','tuner-cents','tuner-hz','tuner-enharmonic'].forEach(id=>document.getElementById(id).textContent='');
   document.getElementById('tuner-card').classList.remove('in-tune');drawGauge(null);
 }
-async function requestWakeLock(){try{A.wakeLock=await navigator.wakeLock?.request('screen');}catch(e){}}
-document.addEventListener('visibilitychange',async()=>{if(S.running&&document.visibilityState==='visible'){A.micAC?.resume();try{A.wakeLock=await navigator.wakeLock?.request('screen');}catch(e){}}});
+async function requestWakeLock(){if(!_wakeLockEnabled)return;try{A.wakeLock=await navigator.wakeLock?.request('screen');}catch(e){}}
+document.addEventListener('visibilitychange',async()=>{if(S.running&&document.visibilityState==='visible'){A.micAC?.resume();if(_wakeLockEnabled)try{A.wakeLock=await navigator.wakeLock?.request('screen');}catch(e){}}});
 
 // ── 타이머 ──
 let _sessInt=null;
@@ -682,9 +709,8 @@ function drawHistory(){
 
   const ppc=(W/2)/50,tol=CFG.tuner.tolCents,N=S.histData.length,rH=H/N;
 
-  // ★ in-tune 존: 불투명하게 직접 칠하기
-  // 검정 위에 반투명이 안 보이는 문제 → 밝은 초록으로 직접
-  c.fillStyle='rgba(34,197,94,.55)';
+  // ★ in-tune 존 — 야광 초록
+  c.fillStyle='rgba(34,197,94,.65)';
   c.fillRect(W/2-tol*ppc,0,tol*2*ppc,H);
 
   // 중앙선
@@ -700,12 +726,7 @@ function drawHistory(){
     const x1=W/2+Math.max(-50,Math.min(50,v1))*ppc;
     const alpha=.22+(i/(N-1))*.78;
     c.globalAlpha=alpha;
-    // in-tune: 흰색(초록 존 위), sharp(높음): 빨강, flat(낮음): 파랑
-    let lineColor;
-    if(Math.abs(v0)<=tol)lineColor='#ffffff';
-    else if(v0>0)lineColor='#ef4444';
-    else lineColor='#60a5fa';
-    c.strokeStyle=lineColor;
+    c.strokeStyle=Math.abs(v0)<=tol?'#4ade80':'#666666';
     c.beginPath();c.moveTo(x0,y0);c.lineTo(x1,y1);c.stroke();
   }
   c.globalAlpha=1;c.restore();
@@ -714,32 +735,40 @@ function drawHistory(){
 // ── 메트로놈 ──
 let _metroVol=0.7,_bpmDebounce=null;
 // 탭 BPM
+// ── BPM 탭탭 (헤더 왼쪽 1/3 탭존) ──
 let _tapTimes=[];
 (function(){
-  const el=document.getElementById('metro-bpm-wrap');
+  const tapZone=document.getElementById('metro-hdr-tap-zone');
   function handleTap(){
     const now=Date.now();
-    // 드래그 중이면 탭 무시
-    if(_metroDragging)return;
     _tapTimes.push(now);
-    // 2초 이상 간격이면 리셋
-    _tapTimes=_tapTimes.filter(t=>now-t<2500);
-    if(_tapTimes.length>=2){
+    _tapTimes=_tapTimes.filter(t=>now-t<3000);
+    // BPM scale 피드백
+    const lbl=document.getElementById('metro-hdr-label');
+    lbl.style.transform='scale(1.18)';lbl.style.transition='transform .08s';
+    setTimeout(()=>{lbl.style.transform='';},120);
+    // 3탭 이상부터 BPM 반영
+    if(_tapTimes.length>=3){
       const intervals=[];
       for(let i=1;i<_tapTimes.length;i++)intervals.push(_tapTimes[i]-_tapTimes[i-1]);
       const avg=intervals.reduce((a,b)=>a+b,0)/intervals.length;
       setBPM(Math.round(60000/avg));
     }
   }
-  // 드래그와 탭 분리
-  let _metroDragging=false,_dragMoved=false;
+  tapZone.addEventListener('click',handleTap);
+  tapZone.addEventListener('touchend',e=>{e.preventDefault();handleTap();},{passive:false});
+})();
+
+// ── BPM 드래그 (metro-bpm-wrap) ──
+(function(){
+  const el=document.getElementById('metro-bpm-wrap');
   let sy=0,sb=0,sw=false;
-  el.addEventListener('mousedown',e=>{sw=true;sy=e.clientY;sb=S.bpm;_dragMoved=false;e.preventDefault();});
-  window.addEventListener('mousemove',e=>{if(!sw)return;if(Math.abs(e.clientY-sy)>4)_dragMoved=true;if(_dragMoved){_metroDragging=true;setBPM(sb+Math.round((sy-e.clientY)/CFG.metro.swipePxPerBpm));}});
-  window.addEventListener('mouseup',e=>{if(sw&&!_dragMoved)handleTap();sw=false;setTimeout(()=>{_metroDragging=false;},50);});
-  el.addEventListener('touchstart',e=>{sw=true;sy=e.touches[0].clientY;sb=S.bpm;_dragMoved=false;},{passive:true});
-  window.addEventListener('touchmove',e=>{if(!sw)return;if(Math.abs(e.touches[0].clientY-sy)>4)_dragMoved=true;if(_dragMoved){_metroDragging=true;setBPM(sb+Math.round((sy-e.touches[0].clientY)/CFG.metro.swipePxPerBpm));}},{passive:true});
-  window.addEventListener('touchend',e=>{if(sw&&!_dragMoved)handleTap();sw=false;setTimeout(()=>{_metroDragging=false;},50);});
+  el.addEventListener('mousedown',e=>{sw=true;sy=e.clientY;sb=S.bpm;e.preventDefault();});
+  window.addEventListener('mousemove',e=>{if(!sw)return;setBPM(sb+Math.round((sy-e.clientY)/CFG.metro.swipePxPerBpm));});
+  window.addEventListener('mouseup',()=>{sw=false;});
+  el.addEventListener('touchstart',e=>{sw=true;sy=e.touches[0].clientY;sb=S.bpm;},{passive:true});
+  window.addEventListener('touchmove',e=>{if(!sw)return;setBPM(sb+Math.round((sy-e.touches[0].clientY)/CFG.metro.swipePxPerBpm));},{passive:true});
+  window.addEventListener('touchend',()=>{sw=false;});
 })();
 
 function setMetroVol(v){_metroVol=v;}
@@ -868,8 +897,7 @@ function deleteRec(idx){if(_recPlayers[idx]){try{_recPlayers[idx].pause();}catch
 function toggleMenu(){
   const overlay=document.getElementById('menu-overlay');
   const isOpen=overlay.classList.toggle('open');
-  if(!isOpen){const hasActive=document.querySelector('.ref-note-btn.on');if(hasActive)document.getElementById('ref-panel').classList.add('open');}
-  else{document.getElementById('ref-panel').classList.remove('open');}
+  if(isOpen){document.getElementById('ref-panel').classList.remove('open');}
 }
 
 // ── rAF ──
@@ -879,7 +907,7 @@ function stopRaf(){if(_rafId){cancelAnimationFrame(_rafId);_rafId=null;}}
 function frame(){
   if(S.running&&A.analyserFFT){
     const fftPass=fftDetect();
-    if(fftPass&&!_lowPowerMode&&Date.now()-S.lastYamnetMs>CFG.yamnet.intervalMs&&A.yamnet){S.lastYamnetMs=Date.now();runYamnet();}
+    if(fftPass&&_aiModeEnabled&&Date.now()-S.lastYamnetMs>CFG.yamnet.intervalMs&&A.yamnet){S.lastYamnetMs=Date.now();runYamnet();}
     if(!fftPass)S.yamnetOK=false;
     const detected=fftPass&&(S.yamnetOK||!A.yamnet);
     S.holdFrames=detected?CFG.detect.holdFrames:Math.max(0,S.holdFrames-1);S.strOK=S.holdFrames>0;
@@ -903,21 +931,61 @@ function toggleFullscreen(){
   }
 }
 
-// 저전력 모드
-let _lowPowerMode=false;
-function setPowerMode(v){
-  _lowPowerMode=v===1;
-  document.querySelectorAll('#power-steps .step-btn').forEach(b=>b.classList.toggle('on',+b.dataset.v===v));
-  if(_lowPowerMode){
-    // WakeLock 해제
-    A.wakeLock?.release();A.wakeLock=null;
-    toast('저전력 모드: 화면 자동 꺼짐, FFT만 사용');
-  }else{
-    // WakeLock 재요청
-    if(S.running)requestWakeLock();
-    toast('일반 모드: 화면 항상 켜짐, AI 감지 활성');
-  }
+// ── 화면 항상 켜짐 / AI 감지 분리 ──
+
+function setWakeLock(v){
+  _wakeLockEnabled=v===1;
+  document.querySelectorAll('#wakelock-steps .step-btn').forEach(b=>b.classList.toggle('on',+b.dataset.v===v));
+  if(_wakeLockEnabled){if(S.running)requestWakeLock();}
+  else{A.wakeLock?.release();A.wakeLock=null;}
+  saveSettings();
 }
+function setAiMode(v){
+  _aiModeEnabled=v===1;
+  document.querySelectorAll('#aimode-steps .step-btn').forEach(b=>b.classList.toggle('on',+b.dataset.v===v));
+  saveSettings();
+}
+
+// ── 설정 localStorage 저장/복원 ──
+const SETTINGS_KEY='gopractice_settings_v1';
+function saveSettings(){
+  const d={cents:CFG.tuner.tolCents,rms:CFG.tuner.rmsMin,smooth:CFG.tuner.smoothing,wakelock:_wakeLockEnabled,aimode:_aiModeEnabled};
+  try{localStorage.setItem(SETTINGS_KEY,JSON.stringify(d));}catch(e){}
+}
+function loadSettings(){
+  try{
+    const raw=localStorage.getItem(SETTINGS_KEY);
+    if(!raw)return;
+    const d=JSON.parse(raw);
+    if(d.cents){setCentsStep(d.cents);}
+    if(d.rms){
+      // rms 값으로 스텝 역산
+      const idx=RMS_LEVELS.findIndex(v=>Math.abs(v-d.rms)<.001);
+      if(idx>=0)setRmsStep(idx+1);
+    }
+    if(d.smooth){
+      const idx=SMOOTH_LEVELS.findIndex(v=>Math.abs(v-d.smooth)<.001);
+      if(idx>=0)setSmoothStep(idx+1);
+    }
+    if(d.wakelock===false)setWakeLock(0);
+    if(d.aimode===false)setAiMode(0);
+  }catch(e){}
+}
+// iOS PWA 안내 배너 (한 번만)
+(function(){
+  const isIos=/iphone|ipad|ipod/i.test(navigator.userAgent);
+  const isStandalone=window.navigator.standalone===true;
+  const dismissed=localStorage.getItem('pwa_banner_dismissed');
+  if(isIos&&!isStandalone&&!dismissed){
+    document.getElementById('pwa-banner').style.display='flex';
+  }
+})();
+function dismissPwaBanner(){
+  document.getElementById('pwa-banner').style.display='none';
+  try{localStorage.setItem('pwa_banner_dismissed','1');}catch(e){}
+}
+loadSettings();
+
 setTimeout(()=>{drawGauge(null);drawHistory();},200);
 document.getElementById('metro-body').style.maxHeight='420px';
 </script>
