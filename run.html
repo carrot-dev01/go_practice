@@ -61,7 +61,9 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--text);fon
 #tuner-hdr{display:flex;align-items:center;justify-content:space-between;padding:10px 16px;border-bottom:1px solid #1c1c1c;transition:border-color .06s;}
 /* 정박 flash: 폰 모드에서 TUNER 헤더 하단선 빨강 */
 @keyframes tunerbeat{0%{border-color:var(--red)}50%{border-color:var(--red)}100%{border-color:#1c1c1c}}
+@keyframes tunerbeatweak{0%{border-color:#aa2222}100%{border-color:#1c1c1c}}
 #tuner-hdr.beat-flash{animation:tunerbeat .5s ease-out forwards;}
+#tuner-hdr.beat-flash-weak{animation:tunerbeatweak .18s ease-out forwards;}
 #tuner-label{font-size:13px;color:#ffffff;font-weight:700;letter-spacing:.12em;}
 #ref-row{display:flex;align-items:center;gap:8px;}
 #ref-lbl{font-size:11px;color:#ffffff;letter-spacing:.06em;}
@@ -155,10 +157,11 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:22px;heigh
 /* ── 풀스크린 메뉴 ── */
 #menu-overlay{position:fixed;inset:0;background:var(--bg);z-index:50;opacity:0;pointer-events:none;transition:opacity .2s;overflow-y:auto;}
 #menu-overlay.open{opacity:1;pointer-events:all;}
-#menu-panel{min-height:100%;display:flex;flex-direction:column;padding:calc(env(safe-area-inset-top,0px) + 16px) 22px 32px;gap:22px;max-width:480px;margin:0 auto;}
-.menu-top{display:flex;justify-content:space-between;align-items:center;}
-.menu-title-txt{font-size:24px;font-weight:700;color:var(--text);}
-.menu-close-btn{background:none;border:none;color:var(--text);font-size:28px;cursor:pointer;}
+#menu-panel{min-height:100%;display:flex;flex-direction:column;padding:0 22px 32px;gap:22px;max-width:480px;margin:0 auto;}
+.menu-top{display:flex;justify-content:space-between;align-items:center;padding:.75rem 0;/* 메인 헤더 padding과 동일 */}
+.menu-title-txt{font-family:'Cormorant Garamond',serif;font-style:italic;font-size:28px;font-weight:600;color:var(--text);line-height:1;letter-spacing:-.01em;}
+/* X 버튼 — ≡ 버튼과 동일 크기/위치 */
+.menu-close-btn{padding:4px 10px;background:transparent;border:none;color:var(--text);font-size:26px;cursor:pointer;line-height:1;}
 .menu-sec{display:flex;flex-direction:column;gap:10px;}
 .menu-sec-title{font-size:16px;color:var(--text);font-weight:700;padding-bottom:9px;border-bottom:2px solid var(--text);}
 /* 타이머 접기 */
@@ -211,37 +214,38 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:22px;heigh
   #main-body{display:grid;grid-template-columns:1fr 1fr;gap:var(--gap);flex:1;min-height:0;width:100%;}
   #ref-panel{max-width:680px;}
 
-  /* 패드 메트로놈 — 세로 적층 레이아웃 */
+  /* 패드 메트로놈 */
   .bd.beat{width:17px;height:17px;}.bd.subdiv{width:9px;height:9px;}
   #beat-vis{gap:8px;height:24px;}
 
-  /* 1행: BPM 왼쪽 + 재생 오른쪽 */
+  /* 행1: BPM 왼쪽 + 재생버튼 오른쪽 */
   #metro-bpm-row{display:flex;align-items:center;justify-content:space-between;gap:12px;}
-  #metro-bpm-wrap{flex:1;cursor:ns-resize;}
+  #metro-bpm-wrap{flex:1;}
   #metro-bpm{font-size:84px;text-align:left;line-height:1;}
   #metro-bpm-hint{text-align:left;}
-  #metro-play-btn{width:76px;height:76px;font-size:34px;flex:0 0 auto;border-radius:14px;}
-  /* adj-col 숨김 — 재생버튼만 bpm-row에 남김 */
-  #metro-adj-col{display:none;}
+  /* adj-col: play-btn만 남기고 나머지 숨김 */
+  #metro-adj-col{flex:0 0 auto;display:flex;flex-direction:column;justify-content:center;}
+  #metro-btn-row{display:flex;gap:0;}
+  .m-adj{display:none!important;}
+  #metro-play-btn{width:76px;height:76px;font-size:34px;border-radius:14px;flex:none;}
+  #metro-vol-row{display:none!important;}
 
-  /* 2행: -/+ 버튼 (별도 행) */
-  #metro-adj-pad{display:flex;gap:8px;}
+  /* 행2: -/+ (패드전용) */
+  #metro-adj-pad{display:flex!important;gap:8px;}
   .m-adj-pad{flex:1;height:52px;background:transparent;border:1.5px solid var(--border);border-radius:10px;color:var(--text);font-size:26px;cursor:pointer;display:flex;align-items:center;justify-content:center;}
 
-  /* 볼륨 */
-  #metro-vol-row{display:flex;align-items:center;gap:8px;}
+  /* 행3: 볼륨 (패드전용) */
+  #metro-vol-pad{display:flex!important;}
 
-  /* 박자: 2개씩 두 줄 */
-  #ts-grid{display:grid;grid-template-columns:1fr 1fr;gap:5px;}
-  #sd-grid{display:grid;grid-template-columns:1fr 1fr;gap:5px;}
+  /* 행4: 박자(왼) + 리듬(오) 2컬럼 나란히 */
+  #metro-grids-wrap{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+  #ts-grid,#sd-grid{display:flex;flex-direction:column;gap:5px;}
   .m-seg{padding:16px 0;font-size:17px;}
 
-  /* 패드: 숨겨진 행들 표시 */
-  #metro-adj-pad{display:flex!important;}
-  #metro-vol-pad{display:flex!important;}
-  /* 접기 버튼 패드에서 숨김 */
+  /* 접기 버튼 숨김, body 항상 펼침 */
   #metro-collapse-btn{display:none!important;}
   #metro-body{max-height:none!important;opacity:1!important;pointer-events:auto!important;}
+}
 }
 </style>
 </head>
@@ -263,8 +267,11 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:22px;heigh
       <div id="logo-sub">play more · tune better</div>
     </div>
     <div id="hdr-right">
+      <button id="hdr-mic-btn" onclick="openMic()" style="padding:6px 11px;background:transparent;border:1.5px solid var(--border);border-radius:8px;color:var(--muted);font-size:12px;font-weight:700;cursor:pointer;letter-spacing:.04em;display:flex;align-items:center;gap:4px;">
+        <span style="font-size:10px;">●</span>MIC
+      </button>
       <span id="hdr-rec-time">0:00</span>
-      <button id="rec-hdr-btn" onclick="tbRec()"><span id="rec-hdr-dot"></span>REC</button>
+      <button id="rec-hdr-btn" onclick="tbRec()" style="opacity:.35;"><span id="rec-hdr-dot"></span>REC</button>
       <button id="menu-btn" onclick="toggleMenu()">≡</button>
     </div>
   </div>
@@ -317,11 +324,11 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:22px;heigh
             <div id="metro-bpm">80</div>
             <span id="metro-bpm-hint">↕ 드래그</span>
           </div>
-          <button id="metro-play-btn" onclick="toggleMetro()">▶</button>
           <div id="metro-adj-col">
             <div id="metro-btn-row">
               <button class="m-adj" onclick="adjBPM(-1)">−</button>
               <button class="m-adj" onclick="adjBPM(+1)">+</button>
+              <button id="metro-play-btn" onclick="toggleMetro()">▶</button>
             </div>
             <div id="metro-vol-row">
               <span class="m-vol-lbl">🔈</span>
@@ -339,17 +346,19 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:22px;heigh
           <span class="m-vol-lbl">🔈</span>
           <input type="range" id="metro-vol-pad-input" min="0" max="1" step="0.05" value="0.7" oninput="setMetroVol(+this.value);document.getElementById('metro-vol').value=this.value;">
         </div>
-        <div class="m-grid" id="ts-grid">
-          <button class="m-seg" data-ts="2" onclick="setTS(2)">2/4</button>
-          <button class="m-seg" data-ts="3" onclick="setTS(3)">3/4</button>
-          <button class="m-seg on" data-ts="4" onclick="setTS(4)">4/4</button>
-          <button class="m-seg" data-ts="6" onclick="setTS(6)">6/8</button>
-        </div>
-        <div class="m-grid" id="sd-grid">
-          <button class="m-seg on" data-sd="1" onclick="setSD(1)">♩</button>
-          <button class="m-seg" data-sd="2" onclick="setSD(2)">♩♩</button>
-          <button class="m-seg" data-sd="3" onclick="setSD(3)">♩♩♩</button>
-          <button class="m-seg" data-sd="d" onclick="setSD('d')">♩.</button>
+        <div id="metro-grids-wrap">
+          <div class="m-grid" id="ts-grid">
+            <button class="m-seg" data-ts="2" onclick="setTS(2)">2/4</button>
+            <button class="m-seg" data-ts="3" onclick="setTS(3)">3/4</button>
+            <button class="m-seg on" data-ts="4" onclick="setTS(4)">4/4</button>
+            <button class="m-seg" data-ts="6" onclick="setTS(6)">6/8</button>
+          </div>
+          <div class="m-grid" id="sd-grid">
+            <button class="m-seg on" data-sd="1" onclick="setSD(1)">♩</button>
+            <button class="m-seg" data-sd="2" onclick="setSD(2)">♩♩</button>
+            <button class="m-seg" data-sd="3" onclick="setSD(3)">♩♩♩</button>
+            <button class="m-seg" data-sd="d" onclick="setSD('d')">♩.</button>
+          </div>
         </div>
       </div>
     </div>
@@ -390,8 +399,8 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:22px;heigh
   <div id="menu-panel">
     <div class="menu-top">
       <span class="menu-title-txt">메뉴</span>
-      <div style="display:flex;align-items:center;gap:8px;">
-        <button onclick="openSettings()" style="background:none;border:1.5px solid var(--border);border-radius:8px;color:var(--text);font-size:14px;font-weight:700;padding:6px 12px;cursor:pointer;">⚙ 설정</button>
+      <div style="display:flex;align-items:center;gap:10px;">
+        <button onclick="openSettings()" style="padding:6px 12px;background:transparent;border:1.5px solid var(--border);border-radius:8px;color:var(--muted);font-size:12px;font-weight:700;cursor:pointer;letter-spacing:.04em;">⚙ 설정</button>
         <button class="menu-close-btn" onclick="toggleMenu()">✕</button>
       </div>
     </div>
@@ -586,7 +595,11 @@ async function openMic(){
     A.scriptProc.onaudioprocess=e=>{const inp=e.inputBuffer.getChannelData(0);for(let i=0;i<inp.length;i+=ratio){A.pcm16k[A.pcmPos%A.pcm16k.length]=inp[Math.floor(i)];A.pcmPos++;}};
     if(A.micAC.state==='suspended')await A.micAC.resume();
     const src=A.micAC.createMediaStreamSource(A.micStream);src.connect(A.analyserFFT);src.connect(A.analyserTD);src.connect(A.scriptProc);
-    S.micReady=true;S.running=true;requestWakeLock();startRaf();_micOpening=false;return true;
+    S.micReady=true;S.running=true;requestWakeLock();startRaf();_micOpening=false;
+    // 헤더 MIC 버튼 숨기고 REC 활성화
+    const mb=document.getElementById('hdr-mic-btn');if(mb)mb.style.display='none';
+    const rhb=document.getElementById('rec-hdr-btn');if(rhb)rhb.style.opacity='1';
+    return true;
   }catch(e){toast('마이크 오류: '+e.message);_micOpening=false;return false;}
 }
 function closeMic(){
@@ -599,6 +612,9 @@ function closeMic(){
   const nEl=document.getElementById('tuner-note');nEl.textContent='--';nEl.className='empty';
   ['tuner-oct','tuner-cents','tuner-hz','tuner-enharmonic'].forEach(id=>document.getElementById(id).textContent='');
   document.getElementById('tuner-card').classList.remove('in-tune');drawGauge(null);
+  // 헤더 MIC 버튼 복원
+  const mb=document.getElementById('hdr-mic-btn');if(mb)mb.style.display='flex';
+  const rhb2=document.getElementById('rec-hdr-btn');if(rhb2)rhb2.style.opacity='.35';
 }
 async function requestWakeLock(){if(!_wakeLockEnabled)return;try{A.wakeLock=await navigator.wakeLock?.request('screen');}catch(e){}}
 document.addEventListener('visibilitychange',async()=>{if(S.running&&document.visibilityState==='visible'){A.micAC?.resume();if(_wakeLockEnabled)try{A.wakeLock=await navigator.wakeLock?.request('screen');}catch(e){}}});
@@ -825,15 +841,15 @@ function litBeat(tick){document.querySelectorAll('.bd').forEach(d=>{d.classList.
 function flashBeat(tick){
   const card=document.getElementById('metro-card');
   card.classList.remove('flash-strong','lit-weak');
+  if(window.innerWidth<700){
+    const th=document.getElementById('tuner-hdr');
+    th.classList.remove('beat-flash','beat-flash-weak');void th.offsetWidth;
+    if(tick===0){th.classList.add('beat-flash');}
+    else{th.classList.add('beat-flash-weak');}
+  }
   if(tick===0){
     void card.offsetWidth;
     card.classList.add('flash-strong');
-    // 폰 모드에서만 튜너 헤더 하단선 flash
-    if(window.innerWidth<700){
-      const th=document.getElementById('tuner-hdr');
-      th.classList.remove('beat-flash');void th.offsetWidth;
-      th.classList.add('beat-flash');
-    }
   }else{
     card.classList.add('lit-weak');
     clearTimeout(card._ft);card._ft=setTimeout(()=>card.classList.remove('lit-weak'),100);
@@ -962,6 +978,10 @@ function openEditor(idx){
     const dl=document.getElementById('ed-dl-btn');
     dl.href=item.url;dl.download='gopractice_'+item.name+'.'+ext;
   });
+  // 이미 로드된 경우 (캐시)
+  if(audio.readyState>=1&&isFinite(audio.duration)){
+    document.getElementById('ed-dur').textContent=fmtT(audio.duration);
+  }
   audio.addEventListener('timeupdate',edOnTimeUpdate);
   audio.addEventListener('ended',()=>{
     document.getElementById('ed-play-btn').textContent='▶';
@@ -1381,14 +1401,16 @@ document.getElementById('metro-body').style.maxHeight='420px';
   <div style="display:flex;flex-direction:column;height:100%;max-width:480px;margin:0 auto;width:100%;box-sizing:border-box;">
 
     <!-- 헤더 -->
-    <div style="display:flex;align-items:center;gap:10px;padding:calc(env(safe-area-inset-top,0px)+16px) 20px 16px;flex-shrink:0;">
-      <button onclick="closeEditor()" style="background:none;border:none;color:var(--text);font-size:24px;cursor:pointer;line-height:1;padding:0;flex-shrink:0;">←</button>
-      <div style="flex:1;min-width:0;">
-        <div style="font-size:19px;font-weight:700;color:var(--text);letter-spacing:.03em;margin-bottom:5px;">편집</div>
-        <div style="display:flex;align-items:center;gap:6px;">
-          <span id="editor-title-display" style="font-family:'DM Mono',monospace;font-size:12px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;"></span>
-          <button onclick="edEditTitle()" style="background:none;border:none;color:var(--dim);font-size:13px;cursor:pointer;flex-shrink:0;padding:0 2px;">✎</button>
-        </div>
+    <div style="padding:calc(env(safe-area-inset-top,0px)+14px) 20px 14px;flex-shrink:0;">
+      <!-- 줄1: ← 편집 -->
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
+        <button onclick="closeEditor()" style="background:none;border:none;color:var(--text);font-size:24px;cursor:pointer;line-height:1;padding:0;flex-shrink:0;">←</button>
+        <span style="font-size:19px;font-weight:700;color:var(--text);letter-spacing:.03em;">편집</span>
+      </div>
+      <!-- 줄2: 파일명 + ✎ -->
+      <div style="display:flex;align-items:center;gap:8px;padding-left:2px;">
+        <span id="editor-title-display" style="font-family:'DM Mono',monospace;font-size:13px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;"></span>
+        <button onclick="edEditTitle()" style="background:none;border:none;color:var(--dim);font-size:14px;cursor:pointer;flex-shrink:0;padding:0 2px;">✎</button>
       </div>
     </div>
 
