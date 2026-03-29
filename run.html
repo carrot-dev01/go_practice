@@ -226,7 +226,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:22px;heigh
   #metro-adj-col{flex:0 0 auto;display:flex;flex-direction:column;justify-content:center;}
   #metro-btn-row{display:flex;gap:0;}
   .m-adj{display:none!important;}
-  #metro-play-btn{width:76px;height:76px;font-size:34px;border-radius:14px;flex:none;display:flex;align-items:center;justify-content:center;line-height:1;}
+  #metro-play-btn{width:76px;height:76px;font-size:34px;border-radius:14px;flex:none;display:flex;align-items:center;justify-content:center;line-height:1;padding:0;}
   #metro-vol-row{display:none!important;}
 
   /* 행2: -/+ (패드전용) */
@@ -995,9 +995,11 @@ function openEditor(idx){
   audio.addEventListener('loadedmetadata',updateDur);
   audio.addEventListener('durationchange',updateDur);
   // 이미 로드된 경우 (캐시)
-  if(audio.readyState>=1&&isFinite(audio.duration)&&audio.duration>0){
-    updateDur();
-  }
+  if(audio.readyState>=1&&isFinite(audio.duration)&&audio.duration>0){updateDur();}
+  // 다운로드 a 태그 설정
+  const _ext=item.mime&&item.mime.includes('mp4')?'m4a':'webm';
+  const _dlA=document.getElementById('ed-dl-btn');
+  if(_dlA){_dlA.href=item.url;_dlA.download='gopractice_'+item.name+'.'+_ext;}
   audio.addEventListener('timeupdate',edOnTimeUpdate);
   audio.addEventListener('ended',()=>{
     document.getElementById('ed-play-btn').textContent='▶';
@@ -1048,6 +1050,7 @@ function edEditTitle(){
 }
 
 function edOnTimeUpdate(){
+  if(_ed.dragging)return; // 드래그 중에는 timeupdate가 UI를 덮어쓰지 않게
   const a=_ed.audio;if(!a||!isFinite(a.duration)||a.duration===0)return;
   const t=a.currentTime,d=a.duration,pct=(t/d*100).toFixed(3)+'%';
   document.getElementById('ed-cur').textContent=fmtT(t);
@@ -1075,18 +1078,33 @@ function edInitDrag(){
     if(_ed.dragging)return;
     if(e.target.closest('#ed-pos-handle,#ed-a-handle,#ed-b-handle'))return;
     if(_ed.audio&&isFinite(_ed.audio.duration)){
-      _ed.audio.currentTime=edPctFromClient(e.clientX)*_ed.audio.duration;
+      const t=edPctFromClient(e.clientX)*_ed.audio.duration;
+      _ed.audio.currentTime=t;
+      // 즉시 UI 반영
+      const pct=(t/_ed.audio.duration*100).toFixed(3)+'%';
+      document.getElementById('ed-pos-handle').style.left=pct;
+      document.getElementById('ed-progress').style.width=pct;
+      document.getElementById('ed-cur').textContent=fmtT(t);
     }
   });
 
   const startDrag=(which,clientX)=>{
     _ed.dragging=which;
   };
+  const edUpdatePosUI=(t)=>{
+    if(!_ed.audio||!isFinite(_ed.audio.duration))return;
+    const pct=(t/_ed.audio.duration*100).toFixed(3)+'%';
+    document.getElementById('ed-pos-handle').style.left=pct;
+    document.getElementById('ed-progress').style.width=pct;
+    document.getElementById('ed-cur').textContent=fmtT(t);
+  };
   const moveDrag=(clientX)=>{
     if(!_ed.dragging||!_ed.audio||!isFinite(_ed.audio.duration))return;
     const t=edPctFromClient(clientX)*_ed.audio.duration;
     if(_ed.dragging==='pos'){
-      _ed.audio.currentTime=Math.max(0,Math.min(_ed.audio.duration,t));
+      const clamped=Math.max(0,Math.min(_ed.audio.duration,t));
+      _ed.audio.currentTime=clamped;
+      edUpdatePosUI(clamped); // 즉시 UI 반영
     }else if(_ed.dragging==='a'){
       _ed.ptA=Math.max(0,Math.min(_ed.ptB!==null?_ed.ptB-0.1:_ed.audio.duration,t));
       edUpdateHandles();edUpdateABtn();edCheckExportBtn();
@@ -1095,7 +1113,13 @@ function edInitDrag(){
       edUpdateHandles();edUpdateBBtn();edCheckExportBtn();
     }
   };
-  const endDrag=()=>{_ed.dragging=null;};
+  const endDrag=()=>{
+    _ed.dragging=null;
+    // 드래그 끝나면 현재 시간으로 UI 동기화
+    if(_ed.audio&&isFinite(_ed.audio.duration)){
+      edUpdatePosUI(_ed.audio.currentTime);
+    }
+  };
 
   posH.addEventListener('mousedown',e=>{e.stopPropagation();startDrag('pos',e.clientX);});
   aH.addEventListener('mousedown',e=>{e.stopPropagation();startDrag('a',e.clientX);});
@@ -1139,11 +1163,12 @@ function edTogglePlay(){
   if(!_ed.audio)return;
   const btn=document.getElementById('ed-play-btn');
   if(_ed.audio.paused){
-    // A 설정 있으면 A 지점부터
     if(_ed.ptA!==null&&_ed.audio.currentTime<_ed.ptA){
       _ed.audio.currentTime=_ed.ptA;
     }
-    _ed.audio.play();btn.textContent='■';
+    const p=_ed.audio.play();
+    btn.textContent='■';
+    if(p&&p.catch)p.catch(()=>{btn.textContent='▶';});
   }else{_ed.audio.pause();btn.textContent='▶';}
 }
 
@@ -1283,13 +1308,6 @@ function edRenderBmList(){
   });
 }
 
-function edDownload(){
-  if(!_ed.item)return;
-  const ext=_ed.item.mime&&_ed.item.mime.includes('mp4')?'m4a':'webm';
-  const a=document.createElement('a');
-  a.href=_ed.item.url;a.download='gopractice_'+_ed.item.name+'.'+ext;
-  document.body.appendChild(a);a.click();document.body.removeChild(a);
-}
 async function edExportAB(){
   if(_ed.ptA===null||_ed.ptB===null){toast('A, B 지점을 먼저 설정해주세요');return;}
   try{
@@ -1429,11 +1447,9 @@ document.getElementById('metro-body').style.maxHeight='420px';
           <span style="font-size:22px;font-weight:700;color:var(--text);">편집</span>
         </div>
       </div>
-      <!-- 줄2: 파일명: 값 수정✎ -->
-      <div style="display:flex;align-items:center;gap:6px;padding:0 0 16px 4px;">
-        <span style="font-size:12px;color:var(--text);font-weight:500;flex-shrink:0;">파일명:</span>
-        <span id="editor-title-display" style="font-family:'DM Mono',monospace;font-size:13px;color:var(--text);font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0;flex:1;"></span>
-        <span onclick="edEditTitle()" style="color:var(--dim);cursor:pointer;font-size:12px;flex-shrink:0;white-space:nowrap;">수정✎</span>
+      <!-- 줄2: 파일명: 값수정✎ -->
+      <div style="padding:0 0 16px 4px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;">
+        <span style="font-size:12px;color:var(--text);font-weight:500;">파일명: </span><span id="editor-title-display" style="font-family:'DM Mono',monospace;font-size:13px;color:var(--text);font-weight:500;"></span><span onclick="edEditTitle()" style="color:var(--dim);cursor:pointer;font-size:12px;margin-left:4px;">수정✎</span>
       </div>
     </div>
 
@@ -1530,8 +1546,8 @@ document.getElementById('metro-body').style.maxHeight='420px';
 
     <!-- 하단: 다운로드 + A-B 저장 -->
     <div style="margin-top:auto;display:flex;gap:8px;padding:0 22px calc(env(safe-area-inset-bottom,0px)+16px);flex-shrink:0;">
-      <button id="ed-dl-btn" onclick="edDownload()"
-        style="flex:1;padding:14px;background:var(--surface);border:1.5px solid var(--border);border-radius:11px;color:var(--text);font-family:'Noto Sans KR',sans-serif;font-size:14px;font-weight:700;cursor:pointer;text-align:center;">다운로드</button>
+      <a id="ed-dl-btn"
+        style="flex:1;padding:14px;background:var(--surface);border:1.5px solid var(--border);border-radius:11px;color:var(--text);font-family:'Noto Sans KR',sans-serif;font-size:14px;font-weight:700;cursor:pointer;text-align:center;text-decoration:none;display:flex;align-items:center;justify-content:center;">다운로드</a>
       <button id="ed-export-btn" onclick="edExportAB()"
         style="flex:1;padding:14px;background:var(--surface);border:1.5px solid var(--border);border-radius:11px;color:var(--dim);font-family:'Noto Sans KR',sans-serif;font-size:14px;font-weight:700;cursor:pointer;text-align:center;">A-B 저장</button>
     </div>
