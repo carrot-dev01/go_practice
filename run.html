@@ -897,7 +897,170 @@ function renderRecList(){
 }
 function toggleRecItem(idx){document.getElementById('rec-detail-'+idx)?.classList.toggle('open');}
 function deleteRec(idx){if(_recPlayers[idx]){try{_recPlayers[idx].pause();}catch(e){}delete _recPlayers[idx];}URL.revokeObjectURL(recItems[idx].url);recItems.splice(idx,1);renderRecList();}
-function openEditor(idx){toast('편집 기능은 다음 버전에 추가될 예정이에요');}
+function openEditor(idx){
+  const item=recItems[idx];if(!item)return;
+  _ed.idx=idx;_ed.item=item;
+  _ed.audio=new Audio(item.url);
+  _ed.audio.preservesPitch=true;
+  _ed.audio.playbackRate=1.0;
+  _ed.ptA=null;_ed.ptB=null;_ed.looping=false;_ed.bookmarks=[];
+  _ed.audio.addEventListener('loadedmetadata',()=>{
+    document.getElementById('ed-seek').max=_ed.audio.duration;
+    document.getElementById('ed-dur').textContent=fmtT(_ed.audio.duration);
+  });
+  _ed.audio.addEventListener('timeupdate',()=>{
+    const t=_ed.audio.currentTime,d=_ed.audio.duration||1;
+    document.getElementById('ed-seek').value=t;
+    document.getElementById('ed-cur').textContent=fmtT(t);
+    // A-B 루프 체크
+    if(_ed.looping&&_ed.ptA!==null&&_ed.ptB!==null&&t>=_ed.ptB){
+      _ed.audio.currentTime=_ed.ptA;
+    }
+  });
+  _ed.audio.addEventListener('ended',()=>{
+    document.getElementById('ed-play-btn').textContent='▶';
+    if(_ed.looping&&_ed.ptA!==null){_ed.audio.currentTime=_ed.ptA;_ed.audio.play();}
+  });
+  document.getElementById('editor-title').textContent=item.name;
+  document.getElementById('ed-speed').value=1.0;
+  document.getElementById('ed-speed-val').textContent='1.0×';
+  document.getElementById('ed-loop-btn').textContent='꺼짐';
+  document.getElementById('ed-loop-btn').style.borderColor='var(--border)';
+  document.getElementById('ed-loop-btn').style.color='var(--muted)';
+  document.getElementById('ed-a-btn').textContent='A: --:--';
+  document.getElementById('ed-b-btn').textContent='B: --:--';
+  document.getElementById('ed-bookmarks').innerHTML='';
+  document.getElementById('ed-play-btn').textContent='▶';
+  document.getElementById('editor-page').style.display='flex';
+}
+
+function closeEditor(){
+  if(_ed.audio){_ed.audio.pause();_ed.audio=null;}
+  document.getElementById('editor-page').style.display='none';
+}
+
+const _ed={idx:-1,item:null,audio:null,ptA:null,ptB:null,looping:false,bookmarks:[]};
+
+function edTogglePlay(){
+  if(!_ed.audio)return;
+  const btn=document.getElementById('ed-play-btn');
+  if(_ed.audio.paused){_ed.audio.play();btn.textContent='■';}
+  else{_ed.audio.pause();btn.textContent='▶';}
+}
+function edSeek(){
+  if(!_ed.audio)return;
+  _ed.audio.currentTime=+document.getElementById('ed-seek').value;
+}
+function edSkip(sec){
+  if(!_ed.audio)return;
+  _ed.audio.currentTime=Math.max(0,Math.min(_ed.audio.duration||0,_ed.audio.currentTime+sec));
+}
+function edSetSpeed(v){
+  document.getElementById('ed-speed-val').textContent=v.toFixed(2).replace('.00','')+'×';
+  if(_ed.audio){_ed.audio.playbackRate=v;_ed.audio.preservesPitch=true;}
+}
+function edSetA(){
+  if(!_ed.audio)return;
+  _ed.ptA=_ed.audio.currentTime;
+  document.getElementById('ed-a-btn').textContent='A: '+fmtT(_ed.ptA);
+  document.getElementById('ed-a-btn').style.borderColor='var(--red)';
+  document.getElementById('ed-a-btn').style.color='var(--red)';
+}
+function edSetB(){
+  if(!_ed.audio)return;
+  _ed.ptB=_ed.audio.currentTime;
+  document.getElementById('ed-b-btn').textContent='B: '+fmtT(_ed.ptB);
+  document.getElementById('ed-b-btn').style.borderColor='var(--red)';
+  document.getElementById('ed-b-btn').style.color='var(--red)';
+}
+function edClearAB(){
+  _ed.ptA=null;_ed.ptB=null;_ed.looping=false;
+  const ab=document.getElementById('ed-a-btn'),bb=document.getElementById('ed-b-btn'),lb=document.getElementById('ed-loop-btn');
+  ab.textContent='A: --:--';ab.style.borderColor='';ab.style.color='';
+  bb.textContent='B: --:--';bb.style.borderColor='';bb.style.color='';
+  lb.textContent='꺼짐';lb.style.borderColor='var(--border)';lb.style.color='var(--muted)';
+}
+function edToggleLoop(){
+  if(_ed.ptA===null||_ed.ptB===null){toast('A, B 지점을 먼저 설정해주세요');return;}
+  if(_ed.ptA>=_ed.ptB){toast('A가 B보다 앞이어야 해요');return;}
+  _ed.looping=!_ed.looping;
+  const btn=document.getElementById('ed-loop-btn');
+  btn.textContent=_ed.looping?'켜짐':'꺼짐';
+  btn.style.borderColor=_ed.looping?'var(--red)':'var(--border)';
+  btn.style.color=_ed.looping?'var(--red)':'var(--muted)';
+  if(_ed.looping&&_ed.audio){_ed.audio.currentTime=_ed.ptA;if(_ed.audio.paused){_ed.audio.play();document.getElementById('ed-play-btn').textContent='■';}}
+}
+function edAddBookmark(){
+  if(!_ed.audio)return;
+  const t=_ed.audio.currentTime;
+  _ed.bookmarks.push(t);
+  _ed.bookmarks.sort((a,b)=>a-b);
+  edRenderBookmarks();
+}
+function edRenderBookmarks(){
+  const wrap=document.getElementById('ed-bookmarks');wrap.innerHTML='';
+  _ed.bookmarks.forEach((t,i)=>{
+    const btn=document.createElement('button');
+    btn.textContent=fmtT(t);
+    btn.style.cssText='padding:6px 12px;background:transparent;border:1.5px solid var(--border);border-radius:7px;color:var(--text);font-family:\'DM Mono\',monospace;font-size:12px;font-weight:700;cursor:pointer;';
+    btn.onclick=()=>{if(_ed.audio)_ed.audio.currentTime=t;};
+    // 길게 누르면 삭제
+    let _hold;
+    btn.addEventListener('touchstart',()=>{_hold=setTimeout(()=>{_ed.bookmarks.splice(i,1);edRenderBookmarks();},600);},{passive:true});
+    btn.addEventListener('touchend',()=>clearTimeout(_hold));
+    btn.addEventListener('mousedown',()=>{_hold=setTimeout(()=>{_ed.bookmarks.splice(i,1);edRenderBookmarks();},600);});
+    btn.addEventListener('mouseup',()=>clearTimeout(_hold));
+    wrap.appendChild(btn);
+  });
+  if(_ed.bookmarks.length===0){wrap.innerHTML='<span style="font-size:12px;color:var(--dim);">핀을 추가하면 여기 표시돼요 · 길게 누르면 삭제</span>';}
+}
+async function edExportAB(){
+  if(_ed.ptA===null||_ed.ptB===null){toast('A, B 지점을 먼저 설정해주세요');return;}
+  if(_ed.ptA>=_ed.ptB){toast('A가 B보다 앞이어야 해요');return;}
+  toast('구간 저장 중...');
+  try{
+    const resp=await fetch(_ed.item.url);
+    const arrayBuf=await resp.arrayBuffer();
+    const tmpAC=new AudioContext();
+    const decoded=await tmpAC.decodeAudioData(arrayBuf);
+    tmpAC.close();
+    const sr=decoded.sampleRate,ch=decoded.numberOfChannels;
+    const startS=Math.floor(_ed.ptA*sr),endS=Math.floor(_ed.ptB*sr),len=endS-startS;
+    const offAC=new OfflineAudioContext(ch,len,sr);
+    const buf=offAC.createBuffer(ch,len,sr);
+    for(let c=0;c<ch;c++){
+      const src=decoded.getChannelData(c);
+      buf.copyToChannel(src.slice(startS,endS),c);
+    }
+    const src=offAC.createBufferSource();src.buffer=buf;src.connect(offAC.destination);src.start();
+    const rendered=await offAC.startRendering();
+    // WAV 인코딩
+    const wav=bufferToWav(rendered);
+    const blob=new Blob([wav],{type:'audio/wav'});
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement('a');
+    a.href=url;a.download='gopractice_'+_ed.item.name+'_cut.wav';
+    document.body.appendChild(a);a.click();document.body.removeChild(a);
+    setTimeout(()=>URL.revokeObjectURL(url),3000);
+    toast('저장 완료!');
+  }catch(e){toast('저장 실패: '+e.message);}
+}
+function bufferToWav(buf){
+  const ch=buf.numberOfChannels,sr=buf.sampleRate,len=buf.length;
+  const byteLen=44+len*ch*2;const ab=new ArrayBuffer(byteLen);const dv=new DataView(ab);
+  function str(o,s){for(let i=0;i<s.length;i++)dv.setUint8(o+i,s.charCodeAt(i));}
+  str(0,'RIFF');dv.setUint32(4,byteLen-8,true);str(8,'WAVE');
+  str(12,'fmt ');dv.setUint32(16,16,true);dv.setUint16(20,1,true);
+  dv.setUint16(22,ch,true);dv.setUint32(24,sr,true);
+  dv.setUint32(28,sr*ch*2,true);dv.setUint16(32,ch*2,true);dv.setUint16(34,16,true);
+  str(36,'data');dv.setUint32(40,len*ch*2,true);
+  let off=44;
+  for(let i=0;i<len;i++){for(let c=0;c<ch;c++){
+    const s=Math.max(-1,Math.min(1,buf.getChannelData(c)[i]));
+    dv.setInt16(off,s<0?s*0x8000:s*0x7FFF,true);off+=2;
+  }}
+  return ab;
+}
 
 // ── 메뉴 ──
 function toggleMenu(){
@@ -995,5 +1158,90 @@ loadSettings();
 setTimeout(()=>{drawGauge(null);drawHistory();},200);
 document.getElementById('metro-body').style.maxHeight='420px';
 </script>
+<!-- 편집 페이지 -->
+<div id="editor-page" style="position:fixed;inset:0;background:var(--bg);z-index:70;display:none;flex-direction:column;overflow:hidden;">
+  <div style="display:flex;flex-direction:column;height:100%;max-width:480px;margin:0 auto;width:100%;padding:calc(env(safe-area-inset-top,0px)+14px) 18px calc(env(safe-area-inset-bottom,0px)+18px);gap:14px;">
+
+    <!-- 상단 헤더 -->
+    <div style="display:flex;align-items:center;gap:12px;">
+      <button onclick="closeEditor()" style="background:none;border:none;color:var(--text);font-size:26px;cursor:pointer;line-height:1;padding:0 4px 0 0;">←</button>
+      <span id="editor-title" style="font-family:'DM Mono',monospace;font-size:14px;color:var(--text);font-weight:500;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"></span>
+    </div>
+
+    <!-- 재생바 -->
+    <div style="display:flex;flex-direction:column;gap:6px;">
+      <input type="range" id="ed-seek" min="0" step="0.01" value="0"
+        style="width:100%;height:5px;-webkit-appearance:none;appearance:none;background:var(--border);border-radius:3px;outline:none;cursor:pointer;"
+        oninput="edSeek()">
+      <div style="display:flex;justify-content:space-between;">
+        <span id="ed-cur" style="font-family:'DM Mono',monospace;font-size:12px;color:var(--muted);">00:00</span>
+        <span id="ed-dur" style="font-family:'DM Mono',monospace;font-size:12px;color:var(--muted);">00:00</span>
+      </div>
+    </div>
+
+    <!-- 재생 컨트롤 -->
+    <div style="display:flex;align-items:center;justify-content:center;gap:16px;">
+      <button onclick="edSkip(-5)" style="background:transparent;border:1.5px solid var(--border);border-radius:10px;color:var(--text);font-size:13px;font-weight:700;padding:10px 14px;cursor:pointer;">−5s</button>
+      <button id="ed-play-btn" onclick="edTogglePlay()"
+        style="width:60px;height:60px;background:var(--red);border:none;border-radius:50%;color:#fff;font-size:26px;cursor:pointer;display:flex;align-items:center;justify-content:center;">▶</button>
+      <button onclick="edSkip(5)" style="background:transparent;border:1.5px solid var(--border);border-radius:10px;color:var(--text);font-size:13px;font-weight:700;padding:10px 14px;cursor:pointer;">+5s</button>
+    </div>
+
+    <!-- 속도 조절 -->
+    <div style="background:var(--surface);border:1.5px solid var(--border);border-radius:12px;padding:14px 16px;display:flex;flex-direction:column;gap:10px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;">
+        <span style="font-size:15px;font-weight:700;color:var(--text);">재생 속도</span>
+        <span id="ed-speed-val" style="font-family:'DM Mono',monospace;font-size:15px;color:var(--red);font-weight:700;">1.0×</span>
+      </div>
+      <input type="range" id="ed-speed" min="0.5" max="1.2" step="0.05" value="1.0"
+        style="width:100%;height:4px;-webkit-appearance:none;appearance:none;background:var(--border);border-radius:2px;outline:none;cursor:pointer;"
+        oninput="edSetSpeed(+this.value)">
+      <div style="display:flex;justify-content:space-between;">
+        <span style="font-size:11px;color:var(--dim);">0.5×</span>
+        <span style="font-size:11px;color:var(--dim);">1.0×</span>
+        <span style="font-size:11px;color:var(--dim);">1.2×</span>
+      </div>
+    </div>
+
+    <!-- A-B 반복 -->
+    <div style="background:var(--surface);border:1.5px solid var(--border);border-radius:12px;padding:14px 16px;display:flex;flex-direction:column;gap:10px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;">
+        <span style="font-size:15px;font-weight:700;color:var(--text);">A-B 반복</span>
+        <button id="ed-loop-btn" onclick="edToggleLoop()"
+          style="padding:7px 16px;background:transparent;border:1.5px solid var(--border);border-radius:8px;color:var(--muted);font-size:13px;font-weight:700;cursor:pointer;">꺼짐</button>
+      </div>
+      <div style="display:flex;gap:8px;">
+        <button onclick="edSetA()" id="ed-a-btn"
+          style="flex:1;padding:10px;background:transparent;border:1.5px solid var(--border);border-radius:9px;color:var(--text);font-family:'DM Mono',monospace;font-size:13px;font-weight:700;cursor:pointer;">
+          A: --:--
+        </button>
+        <button onclick="edSetB()" id="ed-b-btn"
+          style="flex:1;padding:10px;background:transparent;border:1.5px solid var(--border);border-radius:9px;color:var(--text);font-family:'DM Mono',monospace;font-size:13px;font-weight:700;cursor:pointer;">
+          B: --:--
+        </button>
+        <button onclick="edClearAB()"
+          style="padding:10px 14px;background:transparent;border:1.5px solid var(--border);border-radius:9px;color:var(--muted);font-size:13px;font-weight:700;cursor:pointer;">초기화</button>
+      </div>
+    </div>
+
+    <!-- 북마크 -->
+    <div style="background:var(--surface);border:1.5px solid var(--border);border-radius:12px;padding:14px 16px;display:flex;flex-direction:column;gap:10px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;">
+        <span style="font-size:15px;font-weight:700;color:var(--text);">북마크</span>
+        <button onclick="edAddBookmark()"
+          style="padding:7px 16px;background:transparent;border:1.5px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;font-weight:700;cursor:pointer;">+ 핀</button>
+      </div>
+      <div id="ed-bookmarks" style="display:flex;flex-wrap:wrap;gap:6px;min-height:20px;"></div>
+    </div>
+
+    <!-- 구간 저장 -->
+    <button onclick="edExportAB()"
+      style="width:100%;padding:14px;background:transparent;border:1.5px solid var(--border);border-radius:11px;color:var(--text);font-family:'Noto Sans KR',sans-serif;font-size:15px;font-weight:700;cursor:pointer;text-align:center;">
+      A-B 구간 저장 (다운로드)
+    </button>
+
+  </div>
+</div>
+
 </body>
 </html>
