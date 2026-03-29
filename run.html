@@ -989,8 +989,11 @@ function openEditor(idx){
   _ed.audio=audio;
 
   const updateDur=()=>{
-    if(isFinite(audio.duration)&&audio.duration>0)
-      document.getElementById('ed-dur').textContent=fmtT(audio.duration);
+    // item.dur(녹음 시 측정값)와 audio.duration 중 더 큰 값을 반올림해서 표시 → 이력과 일치
+    const d=isFinite(audio.duration)&&audio.duration>0
+      ? Math.max(item.dur||0, Math.round(audio.duration))
+      : (item.dur||0);
+    document.getElementById('ed-dur').textContent=fmtT(d);
   };
   audio.addEventListener('loadedmetadata',updateDur);
   audio.addEventListener('durationchange',updateDur);
@@ -1184,9 +1187,26 @@ function edTogglePlay(){
     if(_ed.ptA!==null&&_ed.audio.currentTime<_ed.ptA){
       _ed.audio.currentTime=_ed.ptA;
     }
-    const p=_ed.audio.play();
     btn.textContent='■';
-    if(p&&p.catch)p.catch(()=>{btn.textContent='▶';});
+    // seek 직후 Android에서 재버퍼링 발생 가능 → 짧은 대기 후 play()
+    const tryPlay=()=>{
+      const p=_ed.audio&&_ed.audio.play();
+      if(p&&p.catch)p.catch(()=>{
+        // reject 시 50ms 후 한 번 더 시도
+        setTimeout(()=>{
+          if(_ed.audio&&_ed.audio.paused){
+            const p2=_ed.audio.play();
+            if(p2&&p2.catch)p2.catch(()=>{btn.textContent='▶';});
+          }
+        },50);
+      });
+    };
+    // readyState < 2 면 canplay 기다렸다가 실행
+    if(_ed.audio.readyState<2){
+      _ed.audio.addEventListener('canplay',tryPlay,{once:true});
+    }else{
+      tryPlay();
+    }
   }else{_ed.audio.pause();btn.textContent='▶';}
 }
 
@@ -1492,13 +1512,13 @@ document.getElementById('metro-body').style.maxHeight='420px';
           <!-- 북마크 틱들 -->
           <div id="ed-bm-ticks"></div>
           <!-- A 핸들 (탭+드래그) -->
-          <div id="ed-a-handle" style="position:absolute;top:50%;display:none;transform:translate(-50%,-50%);z-index:4;cursor:ew-resize;touch-action:none;">
+          <div id="ed-a-handle" style="position:absolute;top:50%;display:none;transform:translate(-50%,-50%);z-index:6;cursor:ew-resize;touch-action:none;">
             <div style="width:3px;height:32px;background:var(--red);border-radius:2px;margin:0 auto;"></div>
             <div style="position:absolute;bottom:100%;left:50%;transform:translateX(-50%);font-family:'DM Mono',monospace;font-size:10px;color:var(--red);font-weight:700;margin-bottom:3px;white-space:nowrap;">A</div>
             <div style="position:absolute;inset:-20px;"></div><!-- 터치 확장 영역 -->
           </div>
           <!-- B 핸들 -->
-          <div id="ed-b-handle" style="position:absolute;top:50%;display:none;transform:translate(-50%,-50%);z-index:4;cursor:ew-resize;touch-action:none;">
+          <div id="ed-b-handle" style="position:absolute;top:50%;display:none;transform:translate(-50%,-50%);z-index:6;cursor:ew-resize;touch-action:none;">
             <div style="width:3px;height:32px;background:var(--red);border-radius:2px;margin:0 auto;"></div>
             <div style="position:absolute;bottom:100%;left:50%;transform:translateX(-50%);font-family:'DM Mono',monospace;font-size:10px;color:var(--red);font-weight:700;margin-bottom:3px;white-space:nowrap;">B</div>
             <div style="position:absolute;inset:-20px;"></div>
