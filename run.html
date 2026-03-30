@@ -624,7 +624,6 @@ document.addEventListener('visibilitychange',async()=>{if(S.running&&document.vi
 let _sessInt=null;
 function stopSessionTimer(){clearInterval(_sessInt);S.timerRunning=false;const tb=document.getElementById('timer-toggle-btn');if(tb){tb.textContent='시작';tb.classList.remove('active');}}
 function toggleTimer(){
-  if(!S.running){toast('마이크를 먼저 켜주세요');return;}
   S.timerRunning=!S.timerRunning;const btn=document.getElementById('timer-toggle-btn');
   if(S.timerRunning){
     clearInterval(_sessInt);
@@ -793,6 +792,13 @@ function getTickInterval(){const b=60/S.bpm;if(S.timeSig===6)return b/2;if(S.sub
 function getTotalTicks(){return S.subDiv==='d'?S.timeSig*2:S.timeSig*S.subDiv;}
 function scheduleClick(time,tick){
   if(!A.micAC)return;
+  const dl=Math.max(0,(time-A.micAC.currentTime)*1000);
+  setTimeout(()=>{litBeat(tick);flashBeat(tick);},dl);
+  // 녹음 중이면 소리 없이 시각 피드백만
+  if(A.recording){
+    setTimeout(()=>{A.isClick=false;},dl+CFG.metro.muteTunerMs);
+    return;
+  }
   const osc=A.micAC.createOscillator(),gain=A.micAC.createGain();osc.connect(gain);gain.connect(A.micAC.destination);
   let freq,vol;
   if(S.subDiv==='d'){const b1=tick===0,bs=tick%2===0;freq=b1?1800:bs?1100:750;vol=b1?.75:bs?.42:.18;}
@@ -800,8 +806,6 @@ function scheduleClick(time,tick){
   vol=Math.min(1,vol*(_metroVol/.7));osc.type='triangle';
   gain.gain.setValueAtTime(vol,time);gain.gain.exponentialRampToValueAtTime(.001,time+CFG.metro.clickDurS);
   osc.frequency.value=freq;osc.onended=()=>{osc.disconnect();gain.disconnect();};osc.start(time);osc.stop(time+CFG.metro.clickDurS);
-  const dl=Math.max(0,(time-A.micAC.currentTime)*1000);
-  setTimeout(()=>{litBeat(tick);flashBeat(tick);},dl);
   setTimeout(()=>{A.isClick=true;},dl-5);setTimeout(()=>{A.isClick=false;},dl+CFG.metro.muteTunerMs);
 }
 function metroSched(){while(A.metroNext<A.micAC.currentTime+CFG.metro.lookaheadS){scheduleClick(A.metroNext,A.metroTick);A.metroNext+=getTickInterval();A.metroTick=(A.metroTick+1)%getTotalTicks();}A.metroTimer=setTimeout(metroSched,CFG.metro.intervalMs);}
@@ -876,7 +880,17 @@ function flashBeat(tick){
 
 // ── 기준음 ──
 function closeRefAll(){document.getElementById('ref-panel').classList.remove('open');stopRefNote();}
-function adjRefOct(d){A.refOctave=Math.max(2,Math.min(6,A.refOctave+d));document.querySelectorAll('#ref-oct-num-ext,#ref-oct-num-menu').forEach(el=>{if(el)el.textContent=A.refOctave;});}
+function adjRefOct(d){
+  A.refOctave=Math.max(2,Math.min(6,A.refOctave+d));
+  document.querySelectorAll('#ref-oct-num-ext,#ref-oct-num-menu').forEach(el=>{if(el)el.textContent=A.refOctave;});
+  // 현재 재생 중인 음 자동 갱신
+  const on=document.querySelector('.ref-note-btn.on');
+  if(on){
+    const note=on.dataset.note;
+    if(note==='도2')playRefHigh();
+    else if(note)playRef(note);
+  }
+}
 function playRefHigh(){
   const alreadyOn=document.querySelector('.ref-note-btn[data-note="도2"].on');
   if(alreadyOn){stopRefNote();return;}
