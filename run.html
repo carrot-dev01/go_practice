@@ -737,7 +737,7 @@ function drawGauge(cents){
 function drawHistory(){
   const canvas=document.getElementById('tuner-history');if(!canvas||!canvas.offsetWidth)return;
   const W=canvas.offsetWidth,H=Math.max(80,canvas.offsetHeight||100),dpr=devicePixelRatio||1;
-  if(canvas.width!==Math.round(W*dpr)){canvas.width=Math.round(W*dpr);canvas.height=Math.round(H*dpr);canvas.style.width=W+'px';canvas.style.height=H+'px';}
+  if(canvas.width!==Math.round(W*dpr)||canvas.height!==Math.round(H*dpr)){canvas.width=Math.round(W*dpr);canvas.height=Math.round(H*dpr);canvas.style.width=W+'px';canvas.style.height=H+'px';}
   const c=canvas.getContext('2d');c.save();c.scale(dpr,dpr);
   c.fillStyle='#000';c.fillRect(0,0,W,H);
   const inTune=document.getElementById('tuner-card').classList.contains('in-tune');
