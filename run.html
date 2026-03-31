@@ -749,7 +749,7 @@ function drawHistory(){
   c.lineWidth=2.5;c.lineCap='round';
   for(let i=0;i<N-1;i++){
     const v0=S.histData[i],v1=S.histData[i+1];if(v0===null||v1===null)continue;
-    const y0=H-(i+.5)*rH, y1=H-(i+1.5)*rH;
+    const y0=(i+.5)*rH, y1=(i+1.5)*rH;
     const x0=W/2+Math.max(-50,Math.min(50,v0))*ppc;
     const x1=W/2+Math.max(-50,Math.min(50,v1))*ppc;
     const alpha=.22+(i/(N-1))*.78;
