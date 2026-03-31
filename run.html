@@ -92,8 +92,8 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--text);fon
 /* 이명동음 */
 #tuner-enharmonic{position:absolute;right:0;top:0;font-family:'DM Mono',monospace;font-size:15px;color:#555;}
 #tuner-right{position:absolute;right:0;bottom:2px;display:flex;flex-direction:column;align-items:flex-end;gap:3px;}
-#tuner-cents{font-family:'DM Mono',monospace;font-size:24px;color:#ffffff;font-weight:500;}
-#tuner-hz{font-family:'DM Mono',monospace;font-size:14px;color:#ffffff;opacity:.7;}
+#tuner-cents{font-family:'DM Mono',monospace;font-size:16px;color:#888;font-weight:500;}
+#tuner-hz{font-family:'DM Mono',monospace;font-size:16px;color:#888;}
 
 /* 히스토리 */
 #tuner-history{flex:1;min-height:80px;border-radius:8px;background:#000;display:block;width:100%;}
@@ -278,10 +278,10 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:22px;heigh
           <div id="tuner-note-center-wrap">
             <div id="tuner-note-main">
               <div id="tuner-note" class="empty">--</div>
-                <span id="tuner-acc"></span>
-                <div id="tuner-oct"></div>
-              </div>
+              <span id="tuner-acc"></span>
+              <div id="tuner-oct"></div>
             </div>
+          </div>
           <div id="tuner-enharmonic"></div>
           <div id="tuner-right">
             <span id="tuner-cents"></span>
