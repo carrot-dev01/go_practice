@@ -239,7 +239,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:22px;heigh
 <div id="mic-popup-bg">
   <div id="mic-popup">
     <div id="mic-popup-title">마이크 접근 필요</div>
-    <div id="mic-popup-desc">튜너와 현악기 감지를 위해<br>마이크를 켜주세요</div>
+    <div id="mic-popup-desc">소리 감지를 위해<br>마이크를 켜주세요</div>
     <button id="mic-popup-btn" onclick="allowMic()">마이크 켜기</button>
     <button id="mic-popup-cancel" onclick="closeMicPopup()">나중에</button>
   </div>
@@ -692,7 +692,7 @@ function updateTunerUI(raw){
   const nEl=document.getElementById('tuner-note'),oEl=document.getElementById('tuner-oct'),cEl=document.getElementById('tuner-cents'),eEl=document.getElementById('tuner-enharmonic');
   if(raw===-1){
     S.smoothFreq=-1;S.lockedMidi=-1;S.lockCount=0;
-    nEl.textContent='--';nEl.className='empty';oEl.textContent='';cEl.textContent='';hEl.textContent='';eEl.textContent='';
+    nEl.textContent='--';nEl.className='empty';oEl.textContent='';cEl.textContent='';eEl.textContent='';
     // [변경] 빈 화면일 때 acc(샾 표시) 도 초기화
     const accEl2=document.getElementById('tuner-acc');if(accEl2)accEl2.textContent='';
     document.getElementById('tuner-card').classList.remove('in-tune');
